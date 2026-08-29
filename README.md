@@ -62,6 +62,7 @@ should hold.
 | `GET /waitlist/count` | — | `{count}`, `Cache-Control: max-age=5` |
 | `POST /waitlist` | — | `{email, website?}`; rate limited 5 / 10 min / IP |
 | `GET /waitlist/list` | `x-admin-key` | newest first, capped at 2000 |
+| `POST /waitlist/remove` | `x-admin-key` | `{email}`; deletes one address, returns `{removed}` |
 
 `website` is a honeypot. If it arrives non-empty the API returns `204` and
 stores nothing. A repeat signup returns the crew number it issued the first
@@ -86,6 +87,12 @@ curl -s -X POST https://api.vessel.wtf/waitlist \
   -H 'content-type: application/json' \
   -d '{"email":"you@example.com"}'
 # -> {"ok":true,"duplicate":true,"n":1,"mailed":false}
+
+# remove one address (deletion / unsubscribe requests)
+curl -s -X POST $API/waitlist/remove \
+  -H "x-admin-key: $ADMIN_KEY" -H 'content-type: application/json' \
+  -d '{"email":"someone@example.com"}'
+# -> {"ok":true,"removed":1}
 
 # export (admin)
 curl -s https://api.vessel.wtf/waitlist/list -H "x-admin-key: $ADMIN_KEY"

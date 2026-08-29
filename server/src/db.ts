@@ -124,3 +124,13 @@ export function hashIp(ip: string | undefined): string | null {
   if (!ip) return null;
   return createHash("sha256").update(`${config.ipHashSalt}:${ip}`).digest("hex");
 }
+
+/**
+ * Remove one address. Required to honour deletion/unsubscribe requests — an
+ * email list you cannot delete from is a liability, not a feature.
+ * Returns how many rows went (0 or 1); citext makes the match case-insensitive.
+ */
+export async function removeFromWaitlist(email: string): Promise<number> {
+  const res = await pool.query("DELETE FROM crew WHERE email = $1", [email]);
+  return res.rowCount ?? 0;
+}

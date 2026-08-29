@@ -12,10 +12,11 @@ import {
   hashIp,
   initSchema,
   listCrew,
+  removeFromWaitlist,
   pool,
 } from "./db.js";
 import { sendWelcome } from "./mail.js";
-import { hit } from "./ratelimit.js";
+import { hit, limits } from "./ratelimit.js";
 
 const app = Fastify({
   // Trust only the hops we actually have (Railway's edge = 1). `true` would
@@ -165,7 +166,7 @@ function keyMatches(provided: string | undefined, expected: string): boolean {
 app.get("/waitlist/list", async (req, reply) => {
   // Rate limited too: this endpoint guards every stored address, so it must
   // not be a free oracle for brute-forcing ADMIN_KEY.
-  const verdict = hit("admin:" + clientKey(req));
+  const verdict = hit("admin:" + clientKey(req), limits.ADMIN_HITS);
   if (verdict.limited) {
     reply.header("Retry-After", String(verdict.retryAfterSec));
     return reply.code(429).send({ ok: false, error: "rate_limited" });
@@ -181,6 +182,39 @@ app.get("/waitlist/list", async (req, reply) => {
 
   reply.header("Cache-Control", "no-store");
   return { emails: await listCrew(2000) };
+});
+
+
+/* -------------------------------------------------------------- remove --- */
+
+const RemoveBody = z.object({
+  email: z.string().trim().toLowerCase().max(254).email(),
+});
+
+app.post("/waitlist/remove", async (req, reply) => {
+  const verdict = hit("admin:" + clientKey(req), limits.ADMIN_HITS);
+  if (verdict.limited) {
+    reply.header("Retry-After", String(verdict.retryAfterSec));
+    return reply.code(429).send({ ok: false, error: "rate_limited" });
+  }
+
+  const provided = req.headers["x-admin-key"];
+  const key = Array.isArray(provided) ? provided[0] : provided;
+  if (!keyMatches(key, config.adminKey)) {
+    return reply.code(401).send({ ok: false, error: "unauthorized" });
+  }
+
+  const parsed = RemoveBody.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    return reply.code(400).send({ ok: false, error: "invalid_email" });
+  }
+
+  // Deletes exactly one address — there is deliberately no bulk or wildcard
+  // form, so a leaked key cannot empty the table in one call.
+  const removed = await removeFromWaitlist(parsed.data.email);
+  req.log.info({ removed }, "waitlist removal");   // count only, never the address
+  reply.header("Cache-Control", "no-store");
+  return { ok: true, removed };
 });
 
 /* ---------------------------------------------------------------- boot --- */

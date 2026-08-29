@@ -8,7 +8,8 @@
  */
 
 const WINDOW_MS = 10 * 60 * 1000;
-const MAX_HITS = 5;
+const MAX_HITS = 5;      // public signup
+const ADMIN_HITS = 60;   // authenticated admin calls
 const MAX_KEYS = 50_000; // bound memory against a spray of spoofed IPs
 
 interface Bucket {
@@ -23,7 +24,7 @@ export interface RateVerdict {
   retryAfterSec: number;
 }
 
-export function hit(key: string, now = Date.now()): RateVerdict {
+export function hit(key: string, max: number = MAX_HITS, now = Date.now()): RateVerdict {
   const existing = buckets.get(key);
 
   if (!existing || now >= existing.resetAt) {
@@ -33,7 +34,7 @@ export function hit(key: string, now = Date.now()): RateVerdict {
   }
 
   existing.hits += 1;
-  if (existing.hits > MAX_HITS) {
+  if (existing.hits > max) {
     return {
       limited: true,
       retryAfterSec: Math.max(1, Math.ceil((existing.resetAt - now) / 1000)),
@@ -53,4 +54,4 @@ export function reset(): void {
   buckets.clear();
 }
 
-export const limits = { WINDOW_MS, MAX_HITS } as const;
+export const limits = { WINDOW_MS, MAX_HITS, ADMIN_HITS } as const;
