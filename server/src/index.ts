@@ -1,0 +1,174 @@
+import Fastify, { type FastifyError } from "fastify";
+import cors from "@fastify/cors";
+import { z } from "zod";
+
+import { config } from "./config.js";
+import {
+  addToWaitlist,
+  countCrew,
+  dbHealthy,
+  hashIp,
+  initSchema,
+  listCrew,
+  pool,
+} from "./db.js";
+import { sendWelcome } from "./mail.js";
+import { hit } from "./ratelimit.js";
+
+const app = Fastify({
+  // trustProxy: Railway terminates TLS upstream, so req.ip must come from
+  // X-Forwarded-For or every caller shares one bucket.
+  trustProxy: true,
+  bodyLimit: 16 * 1024,
+  logger: {
+    level: config.logLevel,
+    // Emails are PII: keep them out of the request log entirely.
+    redact: {
+      paths: ["req.body.email", "req.headers.authorization", "req.headers['x-admin-key']"],
+      remove: true,
+    },
+    serializers: {
+      req(req) {
+        return { method: req.method, url: req.url };
+      },
+    },
+  },
+});
+
+await app.register(cors, {
+  origin(origin, cb) {
+    // Same-origin/curl/server-to-server requests send no Origin header.
+    if (!origin) return cb(null, true);
+    cb(null, config.corsOrigins.includes(origin));
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "x-admin-key"],
+  credentials: false,
+  maxAge: 86_400,
+});
+
+/* -------------------------------------------------------------- health --- */
+
+app.get("/health", async () => ({
+  ok: true,
+  db: await dbHealthy(),
+  resendConfigured: config.resendConfigured,
+}));
+
+/* --------------------------------------------------------------- count --- */
+
+app.get("/waitlist/count", async (_req, reply) => {
+  const count = await countCrew();
+  reply.header("Cache-Control", "public, max-age=5");
+  return { count };
+});
+
+/* -------------------------------------------------------------- signup --- */
+
+const SignupBody = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(254)
+    .email(),
+  website: z.string().optional(),
+  source: z.string().trim().max(64).optional(),
+});
+
+app.post("/waitlist", async (req, reply) => {
+  const raw = (req.body ?? {}) as Record<string, unknown>;
+
+  // Honeypot first: a bot that filled it gets a clean 204 and learns nothing.
+  // No insert, no mail, no rate-limit consumption.
+  const website = typeof raw.website === "string" ? raw.website.trim() : "";
+  if (website.length > 0) {
+    req.log.info({ event: "honeypot" }, "signup rejected");
+    return reply.code(204).send();
+  }
+
+  const parsed = SignupBody.safeParse(raw);
+  if (!parsed.success) {
+    return reply.code(400).send({ ok: false, error: "invalid_email" });
+  }
+  const { email, source } = parsed.data;
+
+  const verdict = hit(req.ip);
+  if (verdict.limited) {
+    reply.header("Retry-After", String(verdict.retryAfterSec));
+    return reply.code(429).send({ ok: false, error: "rate_limited" });
+  }
+
+  let result;
+  try {
+    result = await addToWaitlist(email, source ?? "landing", hashIp(req.ip));
+  } catch (err) {
+    req.log.error({ reason: err instanceof Error ? err.message : "unknown" }, "signup insert failed");
+    return reply.code(500).send({ ok: false, error: "server_error" });
+  }
+
+  if (result.duplicate) {
+    // Already aboard — same crew number as before, and no second email.
+    return reply.code(200).send({ ok: true, duplicate: true, n: result.n, mailed: false });
+  }
+
+  const mailed = await sendWelcome(email, result.n, req.log);
+  return reply.code(200).send({ ok: true, n: result.n, mailed });
+});
+
+/* ---------------------------------------------------------------- list --- */
+
+app.get("/waitlist/list", async (req, reply) => {
+  const provided = req.headers["x-admin-key"];
+  const key = Array.isArray(provided) ? provided[0] : provided;
+
+  // An unset ADMIN_KEY must not make the endpoint public.
+  if (!config.adminKey || key !== config.adminKey) {
+    return reply.code(401).send({ ok: false, error: "unauthorized" });
+  }
+
+  reply.header("Cache-Control", "no-store");
+  return { emails: await listCrew(2000) };
+});
+
+/* ---------------------------------------------------------------- boot --- */
+
+app.setNotFoundHandler((_req, reply) => reply.code(404).send({ ok: false, error: "not_found" }));
+
+app.setErrorHandler((err: FastifyError, req, reply) => {
+  req.log.error({ reason: err.message }, "unhandled error");
+  // Never leak internals to the caller.
+  const status = typeof err.statusCode === "number" && err.statusCode < 500 ? err.statusCode : 500;
+  reply.code(status).send({ ok: false, error: "server_error" });
+});
+
+async function main() {
+  try {
+    await initSchema();
+    app.log.info("schema ready");
+  } catch (err) {
+    app.log.error(
+      { reason: err instanceof Error ? err.message : "unknown" },
+      "schema bootstrap failed — refusing to start",
+    );
+    process.exit(1);
+  }
+
+  await app.listen({ port: config.port, host: "0.0.0.0" });
+  app.log.info(
+    { corsOrigins: config.corsOrigins.length, resendConfigured: config.resendConfigured },
+    "waitlist api up",
+  );
+}
+
+for (const sig of ["SIGTERM", "SIGINT"] as const) {
+  process.on(sig, () => {
+    app.log.info({ sig }, "shutting down");
+    app.close().then(() => pool.end()).finally(() => process.exit(0));
+  });
+}
+
+main().catch((err) => {
+  app.log.error({ reason: err instanceof Error ? err.message : "unknown" }, "boot failed");
+  process.exit(1);
+});

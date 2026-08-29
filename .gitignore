@@ -1,3 +1,10 @@
 .vercel
 node_modules
 .DS_Store
+
+# server build + local env
+server/node_modules
+server/dist
+.env
+.env.*
+!.env.example
