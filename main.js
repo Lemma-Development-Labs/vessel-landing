@@ -158,27 +158,137 @@
     var form = $("[data-waitlist]");
     var success = $("[data-waitlist-success]");
     if (!form || !success) return;
+
     var email = $("[data-waitlist-email]", form);
+    var honeypot = $("[data-waitlist-hp]", form);
+    var submit = $("[data-waitlist-submit]", form);
+    var errorEl = $("[data-waitlist-error]");
+    var countEl = $("[data-waitlist-count]");
+
+    var API = (window.VESSEL_CONFIG && window.VESSEL_CONFIG.WAITLIST_API) || "";
+    API = API.replace(/\/+$/, "");           // tolerate a trailing slash in config
+    var pending = false;
+
+    function showError(msg) {
+      if (!errorEl) return;
+      errorEl.textContent = msg;
+      errorEl.hidden = false;
+    }
+    function clearError() {
+      if (!errorEl) return;
+      errorEl.textContent = "";
+      errorEl.hidden = true;
+    }
+    function setPending(on) {
+      pending = on;
+      if (submit) {
+        submit.disabled = on;
+        submit.textContent = on ? "Boarding…" : "Get testnet access";
+      }
+      if (email) email.disabled = on;
+    }
+
+    /* --- signup ---------------------------------------------------------- */
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      if (pending) return;
+      clearError();
+
       if (email && !email.checkValidity()) {
         email.setAttribute("aria-invalid", "true");
         email.focus();
+        showError("That email doesn't look right.");
         return;
       }
       if (email) email.removeAttribute("aria-invalid");
-      // No endpoint is wired up yet — the design's behaviour is a local
-      // success state. Post to your list provider here.
-      form.hidden = true;
-      success.hidden = false;
+
+      if (!API) {
+        showError("Waitlist isn't configured yet. Try again shortly.");
+        return;
+      }
+
+      setPending(true);
+
+      fetch(API + "/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email ? email.value : "",
+          website: honeypot ? honeypot.value : ""
+        })
+      })
+        .then(function (res) {
+          // 204 is the honeypot path — a real submission never sees it.
+          if (res.status === 204) return { ok: true, n: null };
+          if (res.status === 429) throw new Error("rate");
+          if (res.status === 400) throw new Error("email");
+          if (!res.ok) throw new Error("server");
+          return res.json();
+        })
+        .then(function (data) {
+          // Only ever render a number the server gave us.
+          var n = typeof data.n === "number" ? data.n : null;
+          success.textContent = n
+            ? "Aboard. You're crew member #" + n
+            : "Aboard.";
+          form.hidden = true;
+          success.hidden = false;
+          clearError();
+          refreshCount(true);
+        })
+        .catch(function (err) {
+          // Keep the form: the visitor must be able to retry.
+          setPending(false);
+          if (err && err.message === "rate") {
+            showError("Too many attempts. Try again in a few minutes.");
+          } else if (err && err.message === "email") {
+            showError("That email doesn't look right.");
+          } else {
+            showError("Couldn't reach the crew list. Try again in a moment.");
+          }
+        });
     });
 
     if (email) {
       email.addEventListener("input", function () {
         email.removeAttribute("aria-invalid");
+        clearError();
       });
     }
+
+    /* --- live count ------------------------------------------------------ */
+
+    // Shown only when the server reports a real, positive number. On any
+    // failure the element stays hidden — never invent or stale-render a count.
+    function refreshCount(force) {
+      if (!countEl || !API) return;
+      // The endpoint sets Cache-Control: max-age=5. Straight after a signup we
+      // must not read a stale count out of that window, so bypass the cache.
+      fetch(API + "/waitlist/count", {
+        headers: { Accept: "application/json" },
+        cache: force ? "no-store" : "default"
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error("count");
+          return res.json();
+        })
+        .then(function (data) {
+          var n = typeof data.count === "number" ? data.count : 0;
+          if (n > 0) {
+            countEl.textContent = n.toLocaleString("en-US") + " ABOARD";
+            countEl.hidden = false;
+          } else {
+            countEl.hidden = true;
+          }
+        })
+        .catch(function () {
+          countEl.hidden = true;
+        });
+    }
+
+    refreshCount();
+    setInterval(refreshCount, 10000);
   })();
 
   /* --- Live counters (block height + accrued funding) ---------------------- */

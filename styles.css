@@ -808,6 +808,47 @@
 .waitlist__input:focus { border-color: var(--signal); outline: none; }
 .waitlist__input[aria-invalid="true"] { border-color: var(--brass); }
 
+/* Honeypot: removed from layout and from the accessibility tree, but still a
+   real focusable-free field a naive bot will fill. Not display:none — some
+   bots skip those. */
+.hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+  margin: -1px;
+  padding: 0;
+}
+
+.waitlist__error {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  color: var(--brass);
+  max-width: 520px;
+  line-height: 1.6;
+}
+
+/* Only rendered when the API returns a positive count. */
+.waitlist__count {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.16em;
+  color: var(--steel);
+}
+
+.waitlist__input:disabled,
+.waitlist__form .btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .waitlist__success {
   font-family: var(--mono);
   font-size: 13.5px;

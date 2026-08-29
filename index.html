@@ -6,14 +6,14 @@
 <title>Vessel — The dollar leverage pays for.</title>
 <meta name="description" content="Vessel runs delta-neutral vaults on Monad — long spot, short the perp on Perpl's fully on-chain order book. Longs pay funding. You earn it. The hedge is public, every block.">
 <!-- social -->
-<link rel="canonical" href="https://vessel.wtf/">
+<link rel="canonical" href="https://vessel-hq.vercel.app/">
 <meta name="theme-color" content="#070B10">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Vessel">
-<meta property="og:url" content="https://vessel.wtf/">
+<meta property="og:url" content="https://vessel-hq.vercel.app/">
 <meta property="og:title" content="Vessel — The dollar leverage pays for.">
 <meta property="og:description" content="Delta-neutral vaults on Monad: long spot, short the perp on Perpl's fully on-chain order book. Longs pay funding. You earn it. The hedge is public, every block.">
-<meta property="og:image" content="https://vessel.wtf/og/landing.png">
+<meta property="og:image" content="https://vessel-hq.vercel.app/og/landing.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -23,7 +23,7 @@
 <meta name="twitter:creator" content="@vessel_hq">
 <meta name="twitter:title" content="Vessel — The dollar leverage pays for.">
 <meta name="twitter:description" content="Delta-neutral vaults on Monad: long spot, short the perp on Perpl's fully on-chain order book. Longs pay funding. You earn it. The hedge is public, every block.">
-<meta name="twitter:image" content="https://vessel.wtf/og/landing.png">
+<meta name="twitter:image" content="https://vessel-hq.vercel.app/og/landing.png">
 <meta name="twitter:image:alt" content="Vessel — the dollar leverage pays for. Delta-neutral yield on Monad.">
 <!-- /social -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%238FA6BC' stroke-width='2.5'/%3E%3Cline x1='6' y1='16' x2='26' y2='16' stroke='%23EAEEF3' stroke-width='2.5'/%3E%3C/svg%3E">
@@ -332,9 +332,17 @@
       <h2 class="waitlist__title">Board early.</h2>
       <form class="waitlist__form" data-waitlist novalidate>
         <input type="email" required placeholder="you@harbor.xyz" aria-label="Email address" class="waitlist__input" data-waitlist-email>
-        <button type="submit" class="btn btn--primary">Get testnet access</button>
+        <!-- Honeypot: never shown, never focusable, never announced. A bot that
+             fills it gets a 204 from the API and nothing is stored. -->
+        <div class="hp" aria-hidden="true">
+          <label for="website">Website</label>
+          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" data-waitlist-hp>
+        </div>
+        <button type="submit" class="btn btn--primary" data-waitlist-submit>Get testnet access</button>
       </form>
-      <div class="waitlist__success" data-waitlist-success hidden role="status">✓ ABOARD — TESTNET INVITES GO OUT IN WAVES</div>
+      <div class="waitlist__success" data-waitlist-success hidden role="status"></div>
+      <p class="waitlist__error" data-waitlist-error hidden role="alert"></p>
+      <p class="waitlist__count" data-waitlist-count hidden></p>
     </div>
   </section>
 
@@ -390,6 +398,7 @@
 
 </div>
 
+<script src="config.js"></script>
 <script src="main.js"></script>
 </body>
 </html>
