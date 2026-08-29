@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Vessel — shared design tokens + base
+   Single source of truth for every page (landing, brand kit, litepaper).
+   Values are lifted verbatim from the Claude Design canvas.
+   ========================================================================== */
+
+:root {
+  /* Surfaces */
+  --ink:        #070B10;  /* page base */
+  --abyss:      #05080C;  /* bands, footer, ticker */
+  --hull-bg:    #0B1118;  /* raised surfaces, hover */
+
+  /* Text */
+  --foam:       #EAEEF3;  /* primary text, waterline */
+  --mist:       #B9C6D4;  /* body copy */
+  --steel:      #8FA6BC;  /* labels, hull circle */
+  --slate-lt:   #A9B8C6;  /* secondary body */
+  --slate-warm: #C3CFDB;  /* essay copy */
+  --steel-lt:   #C2D2E0;  /* hull tranche */
+
+  /* Accents */
+  --signal:     #836EF9;  /* one CTA per screen · Monad */
+  --signal-hi:  #957FFF;
+  --signal-lt:  #A79AFB;
+  --signal-ring:#B9ADFC;
+  --on-signal:  #0A0A14;  /* type on signal is ALWAYS this */
+  --funding:    #35D699;  /* positive yield, live status */
+  --brass:      #C9964B;  /* ballast, first-loss, warnings */
+
+  /* Hairlines — never a solid grey */
+  --hairline:   rgba(234, 238, 243, 0.08);
+  --hairline-2: rgba(234, 238, 243, 0.12);
+  --rule:       rgba(234, 238, 243, 0.1);
+
+  /* Type */
+  --sans:    "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+  --mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --serif:   "Newsreader", Georgia, "Times New Roman", serif;
+
+  /* Layout */
+  --shell: 1200px;
+  --gutter: 32px;
+}
+
+/* --- Base ---------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--foam);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--signal); text-decoration: none; }
+a:hover { color: var(--signal-lt); }
+
+::selection { background: rgba(131, 110, 249, 0.35); }
+input::placeholder { color: rgba(143, 166, 188, 0.55); }
+
+img, svg { display: block; }
+
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
