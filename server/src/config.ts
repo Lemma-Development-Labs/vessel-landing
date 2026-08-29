@@ -12,6 +12,7 @@ const Env = z.object({
   PORT: z.coerce.number().int().positive().default(8080),
   CORS_ORIGINS: z.string().default(""),
   IP_HASH_SALT: z.string().default(""),
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(10).default(1),
   NODE_ENV: z.string().default("production"),
   LOG_LEVEL: z.string().default("info"),
 });
@@ -33,6 +34,7 @@ export const config = {
   adminKey: env.ADMIN_KEY,
   port: env.PORT,
   ipHashSalt: env.IP_HASH_SALT,
+  trustProxyHops: env.TRUST_PROXY_HOPS,
   nodeEnv: env.NODE_ENV,
   logLevel: env.LOG_LEVEL,
 

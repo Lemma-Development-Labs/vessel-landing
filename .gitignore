@@ -1,10 +1,33 @@
-.vercel
+# Build output
 node_modules
-.DS_Store
-
-# server build + local env
 server/node_modules
 server/dist
+dist
+build
+
+# Environment / secrets — never commit real values.
 .env
 .env.*
 !.env.example
+*.env
+env
+env/
+.envrc
+secrets.json
+*.pem
+*.key
+!brand/*.svg
+
+# Local credential scratch
+.railway_token
+.vercel_token
+.resend_key
+.admin_key
+.pg_password
+.ip_salt
+
+# Tooling
+.vercel
+.railway
+.DS_Store
+*.log

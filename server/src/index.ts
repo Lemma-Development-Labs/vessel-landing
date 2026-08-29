@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 import Fastify, { type FastifyError } from "fastify";
 import cors from "@fastify/cors";
 import { z } from "zod";
@@ -16,9 +18,12 @@ import { sendWelcome } from "./mail.js";
 import { hit } from "./ratelimit.js";
 
 const app = Fastify({
-  // trustProxy: Railway terminates TLS upstream, so req.ip must come from
-  // X-Forwarded-For or every caller shares one bucket.
-  trustProxy: true,
+  // Trust only the hops we actually have (Railway's edge = 1). `true` would
+  // trust the whole X-Forwarded-For chain, letting any client spoof a fresh
+  // source IP per request and walk straight past the rate limiter.
+  // hopIndex counts right-to-left from the socket peer, so this trusts the
+  // first N proxies and treats the next entry as the real client.
+  trustProxy: (_addr: string, hopIndex: number) => hopIndex < config.trustProxyHops,
   bodyLimit: 16 * 1024,
   logger: {
     level: config.logLevel,
@@ -118,12 +123,33 @@ app.post("/waitlist", async (req, reply) => {
 
 /* ---------------------------------------------------------------- list --- */
 
+/** Constant-time compare so a wrong key leaks no information via timing. */
+function keyMatches(provided: string | undefined, expected: string): boolean {
+  if (!expected || !provided) return false;
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  // timingSafeEqual throws on length mismatch, which would itself be a signal.
+  if (a.length !== b.length) {
+    timingSafeEqual(b, b);
+    return false;
+  }
+  return timingSafeEqual(a, b);
+}
+
 app.get("/waitlist/list", async (req, reply) => {
+  // Rate limited too: this endpoint guards every stored address, so it must
+  // not be a free oracle for brute-forcing ADMIN_KEY.
+  const verdict = hit("admin:" + req.ip);
+  if (verdict.limited) {
+    reply.header("Retry-After", String(verdict.retryAfterSec));
+    return reply.code(429).send({ ok: false, error: "rate_limited" });
+  }
+
   const provided = req.headers["x-admin-key"];
   const key = Array.isArray(provided) ? provided[0] : provided;
 
   // An unset ADMIN_KEY must not make the endpoint public.
-  if (!config.adminKey || key !== config.adminKey) {
+  if (!keyMatches(key, config.adminKey)) {
     return reply.code(401).send({ ok: false, error: "unauthorized" });
   }
 
