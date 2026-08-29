@@ -157,6 +157,30 @@ app.get("/waitlist/list", async (req, reply) => {
   return { emails: await listCrew(2000) };
 });
 
+/* --------------------------------------------------------------- debug --- */
+
+// TEMPORARY, admin-gated: reveals how this host presents the client address so
+// the trusted-hop count can be set from evidence rather than assumption.
+app.get("/debug/ip", async (req, reply) => {
+  const provided = req.headers["x-admin-key"];
+  const key = Array.isArray(provided) ? provided[0] : provided;
+  if (!keyMatches(key, config.adminKey)) {
+    return reply.code(401).send({ ok: false, error: "unauthorized" });
+  }
+  reply.header("Cache-Control", "no-store");
+  return {
+    resolvedIp: req.ip,
+    ips: req.ips ?? null,
+    socketPeer: req.socket.remoteAddress ?? null,
+    trustProxyHops: config.trustProxyHops,
+    forwardingHeaders: Object.fromEntries(
+      Object.entries(req.headers).filter(([k]) =>
+        /^(x-forwarded|x-real-ip|x-envoy|forwarded|cf-connecting-ip|true-client-ip)/i.test(k),
+      ),
+    ),
+  };
+});
+
 /* ---------------------------------------------------------------- boot --- */
 
 app.setNotFoundHandler((_req, reply) => reply.code(404).send({ ok: false, error: "not_found" }));
