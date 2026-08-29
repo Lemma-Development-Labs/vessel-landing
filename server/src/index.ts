@@ -127,6 +127,12 @@ app.post("/waitlist", async (req, reply) => {
   const key = clientKey(req);
   const verdict = hit(key);
   if (verdict.limited) {
+    // Log it: a silent 429 is indistinguishable from an outage when a user
+    // reports "it doesn't work". The key is hashed — never log a raw IP.
+    req.log.warn(
+      { event: "rate_limited", client: hashIp(key)?.slice(0, 12), retryAfterSec: verdict.retryAfterSec },
+      "signup throttled",
+    );
     reply.header("Retry-After", String(verdict.retryAfterSec));
     return reply.code(429).send({ ok: false, error: "rate_limited" });
   }

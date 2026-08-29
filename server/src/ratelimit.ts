@@ -8,7 +8,8 @@
  */
 
 const WINDOW_MS = 10 * 60 * 1000;
-const MAX_HITS = 5;      // public signup
+const MAX_HITS = 20;     // public signup — shared/CGNAT addresses mean
+                         // many unrelated users can share one IP
 const ADMIN_HITS = 60;   // authenticated admin calls
 const MAX_KEYS = 50_000; // bound memory against a spray of spoofed IPs
 
