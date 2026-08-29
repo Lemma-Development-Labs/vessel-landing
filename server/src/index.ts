@@ -81,6 +81,31 @@ const SignupBody = z.object({
   source: z.string().trim().max(64).optional(),
 });
 
+/**
+ * Stable client identity for rate limiting.
+ *
+ * Railway's edge OVERWRITES x-real-ip and x-forwarded-for with the true client
+ * address — verified by attempting to forge both, which were discarded. It then
+ * APPENDS its own internal address to x-forwarded-for, and that address rotates
+ * per request. So req.ip (which reads from the right) is unstable and gave every
+ * request its own bucket, defeating the limiter entirely.
+ *
+ * The leftmost entry / x-real-ip is the real client and is not forgeable here.
+ * Only trusted when a proxy is actually in front (TRUST_PROXY_HOPS > 0); with no
+ * proxy these headers ARE client-controlled, so we fall back to the socket peer.
+ */
+function clientKey(req: { headers: Record<string, unknown>; ip: string }): string {
+  if (config.trustProxyHops > 0) {
+    const raw = req.headers["x-real-ip"] ?? req.headers["x-forwarded-for"];
+    const val = Array.isArray(raw) ? raw[0] : raw;
+    if (typeof val === "string" && val.length > 0) {
+      const first = val.split(",")[0]?.trim();
+      if (first) return first;
+    }
+  }
+  return req.ip;
+}
+
 app.post("/waitlist", async (req, reply) => {
   const raw = (req.body ?? {}) as Record<string, unknown>;
 
@@ -98,7 +123,8 @@ app.post("/waitlist", async (req, reply) => {
   }
   const { email, source } = parsed.data;
 
-  const verdict = hit(req.ip);
+  const key = clientKey(req);
+  const verdict = hit(key);
   if (verdict.limited) {
     reply.header("Retry-After", String(verdict.retryAfterSec));
     return reply.code(429).send({ ok: false, error: "rate_limited" });
@@ -106,7 +132,7 @@ app.post("/waitlist", async (req, reply) => {
 
   let result;
   try {
-    result = await addToWaitlist(email, source ?? "landing", hashIp(req.ip));
+    result = await addToWaitlist(email, source ?? "landing", hashIp(key));
   } catch (err) {
     req.log.error({ reason: err instanceof Error ? err.message : "unknown" }, "signup insert failed");
     return reply.code(500).send({ ok: false, error: "server_error" });
@@ -139,7 +165,7 @@ function keyMatches(provided: string | undefined, expected: string): boolean {
 app.get("/waitlist/list", async (req, reply) => {
   // Rate limited too: this endpoint guards every stored address, so it must
   // not be a free oracle for brute-forcing ADMIN_KEY.
-  const verdict = hit("admin:" + req.ip);
+  const verdict = hit("admin:" + clientKey(req));
   if (verdict.limited) {
     reply.header("Retry-After", String(verdict.retryAfterSec));
     return reply.code(429).send({ ok: false, error: "rate_limited" });
@@ -155,30 +181,6 @@ app.get("/waitlist/list", async (req, reply) => {
 
   reply.header("Cache-Control", "no-store");
   return { emails: await listCrew(2000) };
-});
-
-/* --------------------------------------------------------------- debug --- */
-
-// TEMPORARY, admin-gated: reveals how this host presents the client address so
-// the trusted-hop count can be set from evidence rather than assumption.
-app.get("/debug/ip", async (req, reply) => {
-  const provided = req.headers["x-admin-key"];
-  const key = Array.isArray(provided) ? provided[0] : provided;
-  if (!keyMatches(key, config.adminKey)) {
-    return reply.code(401).send({ ok: false, error: "unauthorized" });
-  }
-  reply.header("Cache-Control", "no-store");
-  return {
-    resolvedIp: req.ip,
-    ips: req.ips ?? null,
-    socketPeer: req.socket.remoteAddress ?? null,
-    trustProxyHops: config.trustProxyHops,
-    forwardingHeaders: Object.fromEntries(
-      Object.entries(req.headers).filter(([k]) =>
-        /^(x-forwarded|x-real-ip|x-envoy|forwarded|cf-connecting-ip|true-client-ip)/i.test(k),
-      ),
-    ),
-  };
 });
 
 /* ---------------------------------------------------------------- boot --- */
