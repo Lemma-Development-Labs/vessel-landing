@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vessel — Litepaper</title>
+<meta name="description" content="The dollar leverage pays for. Vessel's whitepaper v0.1 — delta-neutral yield on Monad, structured into the Hull and Ballast tranches.">
+<!-- social -->
+<link rel="canonical" href="https://vessel.wtf/litepaper">
+<meta name="theme-color" content="#070B10">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Vessel">
+<meta property="og:url" content="https://vessel.wtf/litepaper">
+<meta property="og:title" content="Vessel — Litepaper">
+<meta property="og:description" content="Whitepaper v0.1. Hull and Ballast, the waterfall, the subordination floor, and a hedge anyone can re-derive block by block.">
+<meta property="og:image" content="https://vessel.wtf/og/litepaper.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Vessel litepaper — the mechanism, in full.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@vessel_hq">
+<meta name="twitter:creator" content="@vessel_hq">
+<meta name="twitter:title" content="Vessel — Litepaper">
+<meta name="twitter:description" content="Whitepaper v0.1. Hull and Ballast, the waterfall, the subordination floor, and a hedge anyone can re-derive block by block.">
+<meta name="twitter:image" content="https://vessel.wtf/og/litepaper.png">
+<meta name="twitter:image:alt" content="Vessel litepaper — the mechanism, in full.">
+<!-- /social -->
+<link rel="icon" href="../brand/vessel-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@1,6..72,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="litepaper.css">
+</head>
+<body>
+
+<svg width="0" height="0" aria-hidden="true" focusable="false" class="sprite">
+  <symbol id="i-vessel" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="12" fill="none" stroke="#8FA6BC" stroke-width="2.5"></circle>
+    <line x1="6" y1="16" x2="26" y2="16" stroke="#EAEEF3" stroke-width="2.5"></line>
+  </symbol>
+</svg>
+
+<a href="#doc" class="skip">Skip to the document</a>
+
+<nav class="nav">
+  <div class="nav__inner">
+    <a href="/" class="brand">
+      <svg class="brand__mark" width="18" height="18" aria-hidden="true"><use href="#i-vessel"></use></svg>
+      <span class="brand__word">VESSEL</span>
+    </a>
+    <span class="nav__tag">LITEPAPER</span>
+    <div class="nav__links">
+      <a href="/" class="nav__link">Landing</a>
+      <a href="/brand-kit" class="nav__link">Brand kit</a>
+      <a href="https://docs.vessel.wtf" target="_blank" rel="noopener" class="nav__link">Docs</a>
+    </div>
+  </div>
+</nav>
+
+<header class="lp-head">
+  <div class="lp-head__inner">
+    <span class="eyebrow">Whitepaper v0.1 (draft) · Monad mainnet target · Aug 28, 2026</span>
+    <h1 class="lp-title">Vessel</h1>
+    <p class="lp-sub">The dollar leverage pays for.</p>
+    <blockquote class="callout"><strong>Draft status.</strong> This document is complete in mechanism and architecture but deliberately incomplete in market numbers: every figure that depends on live Perpl data (open interest, funding history, liquidation parameters) is tagged <span class="gate">[GATE-0]</span> and will be filled only from verified data before v1.0. No number in a Vessel document is ever an assumption.</blockquote>
+  </div>
+</header>
+
+<div class="lp-shell">
+  <aside class="lp-toc" aria-label="Table of contents">
+    <div class="lp-toc__inner">
+      <span class="lp-toc__head">CONTENTS</span>
+      <ol class="lp-toc__list">
+          <li><a href="#s1"><span class="lp-toc__num">1</span>Abstract</a></li>
+          <li><a href="#s2"><span class="lp-toc__num">2</span>Background</a></li>
+          <li><a href="#s3"><span class="lp-toc__num">3</span>Protocol design</a></li>
+          <li><a href="#s4"><span class="lp-toc__num">4</span>Architecture</a></li>
+          <li><a href="#s5"><span class="lp-toc__num">5</span>Risk (stated plainly)</a></li>
+          <li><a href="#s6"><span class="lp-toc__num">6</span>Fees and business model</a></li>
+          <li><a href="#s7"><span class="lp-toc__num">7</span>Roadmap</a></li>
+          <li><a href="#s8"><span class="lp-toc__num">8</span>Glossary</a></li>
+      </ol>
+    </div>
+  </aside>
+
+  <main class="lp-doc" id="doc">
+        <h2 id="s1" class="lp-h2"><span class="lp-h2__num">1</span><span>Abstract</span></h2>
+        <p class="lp-p">Vessel is a delta-neutral yield protocol native to Monad. It holds spot assets and shorts the equivalent notional on Perpl — Monad&#x27;s fully on-chain central limit order book for perpetual futures — capturing the funding that leveraged longs pay, plus staking yield when the spot leg is a liquid staking token. The position carries near-zero price exposure; its return is the market price of leverage.</p>
+        <p class="lp-p">Vessel structures this yield stream into two tranches. <strong>Hull</strong> is senior: a fixed rate to maturity, protected by subordination — losses reach it last. <strong>Ballast</strong> is junior: it absorbs negative funding and drawdowns first and earns levered residual yield for doing so. Hull is protection sold as a fixed-income product rather than as insurance; Ballast is underwriting sold as levered yield. Nobody pays a premium; nobody files a claim.</p>
+        <p class="lp-p">Vessel&#x27;s defining property is <strong>verifiability</strong>. Existing synthetic-dollar designs hedge on centralized venues behind custodians; solvency is an attestation. Vessel&#x27;s entire short book lives on a fully on-chain order book, so the hedge — every position, every funding payment — is independently checkable, block by block. In phase three, Vessel mints <strong>vUSD</strong>, a dollar backed by this verifiable book.</p>
+        <h2 id="s2" class="lp-h2"><span class="lp-h2__num">2</span><span>Background</span></h2>
+        <p class="lp-p"><strong>2.1 The funding rate is DeFi&#x27;s most persistent real yield.</strong> Perpetual futures balance longs and shorts through funding: when leverage demand skews long — the structural norm in crypto — longs pay shorts a periodic rate. Delta-neutral capture of this rate is the engine behind the largest synthetic-dollar protocol (Ethena, multi-billion TVL at peak), and behind Kimia&#x27;s model on Solana. The yield is real: it is paid by identifiable counterparties who want leverage.</p>
+        <p class="lp-p"><strong>2.2 The trust problem.</strong> Incumbent basis engines hedge on centralized exchanges via off-exchange settlement providers. Users receive custodial attestations, not proofs. The failure mode of opacity is well documented across CeDeFi: privileged admin keys, unverifiable collateral, hedge books nobody can inspect. A yield product&#x27;s core claim — &quot;we are hedged&quot; — should be checkable, not certified.</p>
+        <p class="lp-p"><strong>2.3 Why this becomes possible on Monad now.</strong> Monad (mainnet Nov 24, 2025) runs a parallel EVM at 10,000 TPS with 400ms blocks and sub-second finality, at near-zero fees [source: docs.monad.xyz; live network data Aug 2026]. Perpl uses this to run matching <em>and</em> settlement fully on-chain, with market-maker post+cancel under 100k gas [source: docs.perpl.xyz]. For the first time on an EVM L1, the hedge venue itself is transparent — and cheap enough to rebalance continuously. Pendle deployed on Monad in 2026 with initial dollar pools, meaning a fixed-rate distribution layer already exists and needs native yield feedstock. Monad&#x27;s TVL approached $1B in Aug 2026 with no native funding-capture engine <span class="gate">[GATE-0: competitor check — confirm no live native basis vault]</span>.</p>
+        <h2 id="s3" class="lp-h2"><span class="lp-h2__num">3</span><span>Protocol design</span></h2>
+        <h3 class="lp-h3">3.1 The engine</h3>
+        <p class="lp-p">For each supported market <em>m</em> (launch set: ETH; expansion: BTC, MON <span class="gate">[GATE-0: confirm Perpl testnet/mainnet market list]</span>):</p>
+        <ol class="lp-list"><li><strong>Spot leg.</strong> Buy the asset (or its LST — shMON/gMON for MON <span class="gate">[GATE-0: LST contract addresses + liquidity]</span>) via Kuru/Uniswap on Monad.</li><li><strong>Short leg.</strong> Short equal notional on Perpl with USDC margin at leverage λ.</li><li><strong>Neutrality.</strong> Maintain |net delta| ≤ 1% of gross notional; rebalance on band breach or a 4-hour timer, whichever first.</li></ol>
+        <p class="lp-p"><strong>Capital construction.</strong> Per $1 of deployed TVL with short-leg leverage λ:</p>
+        <ul class="lp-list"><li>spot fraction = λ/(1+λ), short margin = 1/(1+λ), hedged notional = λ/(1+λ).</li><li>Launch policy: <strong>λ ≤ 2</strong> (spot 66.7% / margin 33.3% / hedged notional 66.7% per $1).</li><li>A <strong>10% idle USDC buffer</strong> is held unhedged for withdrawals and margin top-ups; deployed ratio ≤ 90%.</li></ul>
+        <p class="lp-p"><strong>Gross yield</strong> per period: <code>G = hedged_notional × (funding_rate + staking_rate_if_LST) − trading_costs − keeper_costs</code> Funding can be negative; the structure in §3.2 exists because of that.</p>
+        <p class="lp-p"><strong>Liquidation policy.</strong> Margin is maintained such that the short&#x27;s liquidation price sits ≥ 40% above mark <span class="gate">[GATE-0: derive exact maintenance-margin math from Perpl&#x27;s liquidation engine docs]</span>. The keeper tops up margin from the idle buffer before the threshold; a breach of the buffer triggers automatic de-risking (partial unwind), never added leverage.</p>
+        <h3 class="lp-h3">3.2 Tranches: Hull and Ballast</h3>
+        <p class="lp-p">Deposits enter a USDC-denominated ERC-4626 vault and are allocated to one of two claims on the engine:</p>
+        <p class="lp-p"><strong>Hull (senior).</strong></p>
+        <ul class="lp-list"><li>Issued in fixed-maturity series (launch: 4-week; later 12-week) as transferable series tokens.</li><li>Pays a fixed rate <strong>r<sub>H</sub></strong> set at issuance. Launch policy: <code>r_H = clamp(EWMA_30d(net funding APR) × (1 − h), 0, r_cap)</code> with haircut <strong>h = 40%</strong> and cap <strong>r_cap = 15% APR</strong> <span class="gate">[GATE-0: calibrate from real Perpl funding history]</span>. Later series move to a Dutch auction so the market sets r<sub>H</sub>.</li><li>Redeems principal + fixed yield at maturity. Early exit only via secondary sale (Pendle-compatible by design).</li></ul>
+        <p class="lp-p"><strong>Ballast (junior).</strong></p>
+        <ul class="lp-list"><li>Perpetual rolling tranche; receives everything above Hull&#x27;s promise; absorbs everything below it, first.</li><li>Withdrawals subject to a <strong>48h cooldown</strong> and to the subordination floor (below).</li></ul>
+        <p class="lp-p"><strong>The waterfall,</strong> each accrual epoch (daily accrual, continuous NAV):</p>
+        <div class="pre-wrap"><pre><code>G (gross yield)
+ ├─ 1. Protocol fee: 10% of max(G, 0)  → half to Reserve until target, rest to treasury
+ ├─ 2. Hull accrual: A_H = r_H × H × Δt
+ └─ 3. Residual (G&#x27; − A_H) → Ballast   [levered upside]
+
+If G&#x27; &lt; A_H (shortfall S):
+ 1. Ballast NAV absorbs S
+ 2. then Reserve absorbs S
+ 3. only then Hull NAV is impaired (a formally-defined credit event, disclosed on-chain)</code></pre></div>
+        <p class="lp-p"><strong>Subordination constraint.</strong> <code>B / (H + B) ≥ θ_min = 20%</code> at all times. New Hull issuance is capped by available Ballast; Ballast withdrawals that would breach θ<sub>min</sub> queue until capacity exists. θ<sub>min</sub> is the attachment point that makes Hull&#x27;s protection quantifiable: Hull is impaired only after Ballast (≥20% of TVL) and the Reserve are exhausted.</p>
+        <p class="lp-p"><strong>Reserve.</strong> Target = 2% of TVL, funded from the protocol-fee split; exists to smooth transient negative-funding epochs so Ballast NAV isn&#x27;t whipsawed by noise.</p>
+        <p class="lp-p"><strong>Conservation invariant (enforced in code and fuzzed):</strong> <code>ΔNAV_Hull + ΔNAV_Ballast + ΔReserve + fees = G</code> for every epoch, no exceptions.</p>
+        <h3 class="lp-h3">3.3 Why Hull is cover, not insurance</h3>
+        <p class="lp-p">On-chain insurance failed on three axes: nobody wants to pay premiums, claims processes rot, and underwriting capital never shows up. Hull dissolves all three. The &quot;premium&quot; is the spread between expected funding and r<sub>H</sub> — paid invisibly, inside a product people already want (a fixed rate). The &quot;claim&quot; is the waterfall — automatic, rule-based, no adjudication. The &quot;underwriter&quot; is Ballast — capital that shows up because first-loss is compensated with levered yield, not with gratitude. Cover as capital structure.</p>
+        <h3 class="lp-h3">3.4 vUSD (phase 3, post-audit)</h3>
+        <p class="lp-p">vUSD is a dollar minted 1:1 against the delta-neutral book, over-collateralized by the Ballast + Reserve cushion, redeemable via engine unwind. Design constraints, fixed now: <strong>no privileged mint path exists in any Vessel contract</strong> — vUSD supply changes only through the collateralized mint/redeem flow; parameters sit behind a timelock; the only guardian power is pause (which cannot move funds). A staked variant (svUSD) directs the engine yield to stakers. vUSD&#x27;s endgame utilities: Pendle pools (distribution) and Perpl margin collateral (flywheel) — both subject to those teams&#x27; listings, stated as goals, not facts.</p>
+        <h2 id="s4" class="lp-h2"><span class="lp-h2__num">4</span><span>Architecture</span></h2>
+        <div class="pre-wrap"><pre><code>             ┌────────────────────────────── Monad ──────────────────────────────┐
+  USDC ──▶  VesselVault (ERC-4626)
+              │
+              ├── TrancheController ── Hull series tokens / Ballast token
+              │        └─ waterfall accounting · NAV · subordination checks
+              ├── EngineManager ── per-market targets · rebalance bands · buffer
+              │        ├── PerplAdapter  ── short leg  [GATE-0: contract ABI vs
+              │        │                     dex-sdk integration surface]
+              │        └── SpotAdapter   ── Kuru / Uniswap routing
+              ├── ReserveModule
+              └── Guardian (pause-only) + Timelock (params)   — no admin mint, ever
+
+  Keeper (off-chain bot; permissionless-executable functions on mainnet):
+    funding harvest · rebalance · margin top-up · epoch settlement
+  Proof-of-Hedge stack:
+    indexer (per docs.monad.xyz/guides/indexers — Monad full nodes do not serve
+    arbitrary historical state, so an indexer is mandatory) → public dashboard
+    → per-block hedge attestation feed anyone can recompute</code></pre></div>
+        <p class="lp-p"><strong>Monad-specific engineering constraints (verified, docs.monad.xyz):</strong> transactions are charged on <strong>gas limit</strong>, not gas used — all keeper calls carry tight, profiled limits; the Reserve Balance mechanism governs inclusion; no EIP-4844 blobs; 128KB contract size ceiling; Foundry ≥ v1.8 with the Monad execution network for local parity.</p>
+        <p class="lp-p"><strong>Oracles.</strong> Mark-price and NAV inputs <span class="gate">[GATE-0: enumerate live Monad mainnet price feeds and their update cadence before choosing; Perpl&#x27;s own oracle source to be documented]</span>. Vessel&#x27;s design principle: internal NAV derives from on-chain observable positions wherever possible; external feeds are inputs, never authorities over solvency claims.</p>
+        <h2 id="s5" class="lp-h2"><span class="lp-h2__num">5</span><span>Risk (stated plainly)</span></h2>
+        <ol class="lp-list"><li><strong>Funding inversion.</strong> Extended negative funding drains Ballast, then Reserve. Mitigations: multi-market diversification, per-market caps, de-risk rules, and the honest one — Hull&#x27;s rate haircut exists because funding is volatile. The Nov 2026 MON unlock may invert MON funding specifically; the MON market launches capped and last.</li><li><strong>Liquidation/gap risk</strong> on the short leg. Mitigated by λ ≤ 2, the 40% liquidation buffer, 400ms rebalance granularity — not eliminated.</li><li><strong>Venue risk.</strong> Vessel&#x27;s hedge is verifiable, but it lives on Perpl&#x27;s contracts; a Perpl failure is a Vessel failure. We do not pretend otherwise — the transparency claim is about <em>observability</em>, not invincibility.</li><li><strong>Basis risk.</strong> Spot leg and perp mark can diverge; LST legs add depeg risk.</li><li><strong>Vessel contract risk.</strong> Unaudited until the external review that gates mainnet. Testnet only until then.</li><li><strong>Liquidity risk.</strong> Hull is illiquid to maturity by design; Ballast exits are cooldown- and subordination-constrained by design.</li><li><strong>Regulatory.</strong> vUSD (phase 3) is a synthetic dollar; jurisdictional analysis precedes its mainnet, not its whitepaper section.</li></ol>
+        <h2 id="s6" class="lp-h2"><span class="lp-h2__num">6</span><span>Fees and business model</span></h2>
+        <ul class="lp-list"><li><strong>Protocol fee:</strong> 10% of gross positive yield (Reserve takes half until target).</li><li><strong>Hull spread:</strong> the gap between realized net funding and r<sub>H</sub> accrues to the waterfall (Ballast + protocol), which is why conservative r<sub>H</sub> setting is also the revenue engine.</li><li><strong>Execution rebate:</strong> Vessel attaches its own Perpl <strong>builder code</strong> to all engine flow (builder-fee fields are native in Perpl&#x27;s API), recapturing basis points on its own execution.</li><li><strong>Phase 3:</strong> vUSD mint/redeem fee (single-digit bps) and svUSD fee share.</li><li><strong>B2B (&quot;fix this rate&quot;):</strong> an embeddable module letting any Monad frontend offer Hull at deposit time for a revenue share — the distribution model Monad&#x27;s own research proposed for on-chain protection, applied to yield.</li></ul>
+        <p class="lp-p">Revenue = TVL × net yield × 10% + Hull spread capture + rebates. No projected figures appear here until Gate-0 supplies real funding data; the illustrative model lives in the thesis document, clearly labeled.</p>
+        <h2 id="s7" class="lp-h2"><span class="lp-h2__num">7</span><span>Roadmap</span></h2>
+        <ul class="lp-list"><li><strong>Phase 0 — Gates (now).</strong> Perpl OI + funding history via API; competitor scan; oracle census; liquidation math. Any failed gate is a published STOP, not a workaround.</li><li><strong>Phase 1 — Testnet MVP (weeks 1–6).</strong> Single ETH market, Hull series-001 (4-week), Ballast, waterfall, proof-of-hedge dashboard. Spec: see MVP document.</li><li><strong>Phase 2 — Hardened testnet → external review.</strong> Invariant/fuzz suite, negative-funding simulations, liquidation drills; review is a hard mainnet gate.</li><li><strong>Phase 3 — Capped mainnet.</strong> Deposit caps, θ<sub>min</sub> raised, Pendle listing conversation, grant applications with live metrics.</li><li><strong>Phase 4 — vUSD + multi-market + auctions.</strong></li></ul>
+        <h2 id="s8" class="lp-h2"><span class="lp-h2__num">8</span><span>Glossary</span></h2>
+        <p class="lp-p"><strong>Funding</strong> — periodic payment between perp longs and shorts. <strong>Delta-neutral</strong> — price exposure ≈ 0. <strong>Hull</strong> — senior fixed-rate tranche. <strong>Ballast</strong> — junior first-loss tranche. <strong>θ<sub>min</sub></strong> — minimum Ballast share of TVL (subordination floor). <strong>r<sub>H</sub></strong> — Hull&#x27;s fixed rate. <strong>vUSD</strong> — the dollar minted against the hedged book. <strong>Proof-of-Hedge</strong> — the per-block public reconstruction of Vessel&#x27;s positions.</p>
+    <p class="lp-disclaimer">Vessel is experimental software. This document describes intended mechanisms, not an offer of securities or financial advice. Entity: Lemma Development Labs (structure TBC).</p>
+  </main>
+</div>
+
+<footer class="lp-foot">
+  <div class="lp-foot__inner">
+    <a href="/" class="brand">
+      <svg class="brand__mark" width="17" height="17" aria-hidden="true"><use href="#i-vessel"></use></svg>
+      <span class="brand__word brand__word--sm">VESSEL</span>
+    </a>
+    <span class="lp-foot__copy">© 2026 VESSEL · VESSEL.WTF</span>
+  </div>
+</footer>
+
+</body>
+</html>
