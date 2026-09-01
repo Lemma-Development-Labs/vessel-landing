@@ -231,7 +231,6 @@
     if (!form || !success) return;
 
     var email    = $("[data-waitlist-email]", form);
-    var handle   = $("[data-waitlist-handle]", form);
     var honeypot = $("[data-waitlist-hp]", form);
     var submit   = $("[data-waitlist-submit]", form);
     var errorEl  = $("[data-waitlist-error]");
@@ -258,7 +257,6 @@
         submit.textContent = on ? "Boarding…" : "Request access →";
       }
       if (email) email.disabled = on;
-      if (handle) handle.disabled = on;
     }
 
     form.addEventListener("submit", function (e) {
@@ -286,10 +284,8 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email ? email.value : "",
-          // The visible field is `handle`. `website` is the honeypot and must
-          // stay empty for a real person — sending the handle as `website`
-          // would make the API silently discard every genuine signup.
-          handle: handle ? handle.value : "",
+          // `website` is the honeypot and must stay empty for a real person:
+          // a non-empty value makes the API discard the signup silently.
           website: honeypot ? honeypot.value : "",
         }),
       })
