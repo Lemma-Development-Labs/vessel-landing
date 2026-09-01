@@ -80,6 +80,9 @@ const SignupBody = z.object({
     .email(),
   website: z.string().optional(),
   source: z.string().trim().max(64).optional(),
+  // Optional, user-supplied, purely informational. NOT the honeypot — that is
+  // `website`, and the two must never be conflated.
+  handle: z.string().trim().max(120).optional(),
 });
 
 /**
@@ -122,7 +125,7 @@ app.post("/waitlist", async (req, reply) => {
   if (!parsed.success) {
     return reply.code(400).send({ ok: false, error: "invalid_email" });
   }
-  const { email, source } = parsed.data;
+  const { email, source, handle } = parsed.data;
 
   const key = clientKey(req);
   const verdict = hit(key);
@@ -139,7 +142,7 @@ app.post("/waitlist", async (req, reply) => {
 
   let result;
   try {
-    result = await addToWaitlist(email, source ?? "landing", hashIp(key));
+    result = await addToWaitlist(email, source ?? "landing", hashIp(key), handle || null);
   } catch (err) {
     req.log.error({ reason: err instanceof Error ? err.message : "unknown" }, "signup insert failed");
     return reply.code(500).send({ ok: false, error: "server_error" });

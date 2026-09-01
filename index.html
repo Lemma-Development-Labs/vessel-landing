@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vessel — The dollar leverage pays for.</title>
-<meta name="description" content="Vessel runs delta-neutral vaults on Monad — long spot, short the perp on Perpl's fully on-chain order book. Longs pay funding. You earn it. The hedge is public, every block.">
+<meta name="description" content="Delta-neutral vaults on Monad. Hold spot, short the perp on a fully on-chain order book, collect what longs pay to stay long. The hedge isn't attested — it's readable, every block.">
 <!-- social -->
 <link rel="canonical" href="https://vessel.wtf/">
-<meta name="theme-color" content="#070B10">
+<meta name="theme-color" content="#05070A">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Vessel">
 <meta property="og:url" content="https://vessel.wtf/">
 <meta property="og:title" content="Vessel — The dollar leverage pays for.">
-<meta property="og:description" content="Delta-neutral vaults on Monad: long spot, short the perp on Perpl's fully on-chain order book. Longs pay funding. You earn it. The hedge is public, every block.">
+<meta property="og:description" content="Delta-neutral vaults on Monad. Hold spot, short the perp on a fully on-chain order book, collect what longs pay to stay long. The hedge is readable, every block.">
 <meta property="og:image" content="https://vessel.wtf/og/landing.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
@@ -22,383 +22,548 @@
 <meta name="twitter:site" content="@vessel_hq">
 <meta name="twitter:creator" content="@vessel_hq">
 <meta name="twitter:title" content="Vessel — The dollar leverage pays for.">
-<meta name="twitter:description" content="Delta-neutral vaults on Monad: long spot, short the perp on Perpl's fully on-chain order book. Longs pay funding. You earn it. The hedge is public, every block.">
+<meta name="twitter:description" content="Delta-neutral vaults on Monad. Hold spot, short the perp on a fully on-chain order book, collect what longs pay to stay long.">
 <meta name="twitter:image" content="https://vessel.wtf/og/landing.png">
 <meta name="twitter:image:alt" content="Vessel — the dollar leverage pays for. Delta-neutral yield on Monad.">
 <!-- /social -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%238FA6BC' stroke-width='2.5'/%3E%3Cline x1='6' y1='16' x2='26' y2='16' stroke='%23EAEEF3' stroke-width='2.5'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='14.4' fill='none' stroke='%23F4F1EA' stroke-width='2.6'/%3E%3Cpath d='M3 20H37' stroke='%23F4F1EA' stroke-width='2.6'/%3E%3Cpath d='M20 20V34.4' stroke='%23FF5B29' stroke-width='2.6'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@1,6..72,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/tokens.css?v=2">
-<link rel="stylesheet" href="/styles.css?v=2">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/v2.css?v=3">
 </head>
 <body>
 
-<!-- Shared logo sprite -->
-<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
-  <symbol id="i-vessel" viewBox="0 0 32 32">
-    <circle cx="16" cy="16" r="12" fill="none" stroke="#8FA6BC" stroke-width="2.5"></circle>
-    <line x1="6" y1="16" x2="26" y2="16" stroke="#EAEEF3" stroke-width="2.5"></line>
-  </symbol>
-  <symbol id="i-monad" viewBox="0 0 423 80">
-    <path d="M39.6349 0C28.1892 0 0 28.4481 0 39.9998C0 51.5514 28.1892 80 39.6349 80C51.0805 80 79.2702 51.551 79.2702 39.9998C79.2702 28.4486 51.081 0 39.6349 0ZM33.4584 62.873C28.6319 61.5457 15.6554 38.6374 16.9708 33.7664C18.2863 28.8952 40.985 15.7995 45.8115 17.127C50.6383 18.4543 63.6148 41.3622 62.2994 46.2334C60.9839 51.1046 38.2849 64.2006 33.4584 62.873Z" fill="#6E54FF"></path>
-    <path d="M134.674 48.8653V48.8506L112.153 6.93062C111.71 6.10548 110.484 6.30311 110.318 7.22658L99.1024 69.4849C98.9924 70.095 99.4569 70.6567 100.071 70.6567H108.749C109.225 70.6567 109.633 70.3129 109.718 69.8402L116.249 33.5135L133.805 67.2907C134.174 68.0004 135.181 68.0004 135.55 67.2907L153.105 33.5135L159.637 69.8402C159.722 70.3129 160.13 70.6567 160.606 70.6567H169.283C169.898 70.6567 170.362 70.095 170.252 69.4849L159.037 7.22658C158.87 6.30311 157.645 6.10548 157.202 6.93062L134.674 48.8653Z" fill="#EAEEF3"></path>
-    <path d="M206.74 8.10352C188.875 8.10352 174.882 22.1133 174.882 40.0017C174.882 57.8902 188.875 71.9078 206.74 71.9078C224.557 71.9078 238.516 57.8941 238.516 40.0017C238.516 22.1094 224.557 8.10352 206.74 8.10352ZM206.74 61.227C195.09 61.227 185.963 51.9027 185.963 40.0017C185.963 28.1008 195.09 18.7843 206.74 18.7843C218.343 18.7843 227.435 28.1047 227.435 40.0017C227.435 51.8988 218.342 61.227 206.74 61.227Z" fill="#EAEEF3"></path>
-    <path d="M287.618 47.3188L250.263 6.74143C249.653 6.07969 248.556 6.51471 248.556 7.41797V69.6628C248.556 70.2117 248.997 70.6568 249.541 70.6568H258.572C259.116 70.6568 259.557 70.2117 259.557 69.6628V32.6151L296.829 73.269C297.438 73.9328 298.537 73.4982 298.537 72.594V10.349C298.537 9.80005 298.096 9.35503 297.552 9.35503H288.603C288.059 9.35503 287.618 9.80005 287.618 10.349V47.3188Z" fill="#EAEEF3"></path>
-    <path d="M308.113 70.6564H317.81C318.194 70.6564 318.543 70.431 318.704 70.0791L325.968 54.2025H349.197L356.297 70.0715C356.456 70.4275 356.808 70.6564 357.195 70.6564H367.716C368.442 70.6564 368.919 69.89 368.603 69.23L338.801 6.98899C338.443 6.24032 337.386 6.24032 337.028 6.98899L307.226 69.23C306.91 69.89 307.387 70.6564 308.113 70.6564ZM330.522 44.3519L337.741 28.5412L344.825 44.3519H330.522Z" fill="#EAEEF3"></path>
-    <path d="M392.141 9.35474H377.239C376.695 9.35474 376.254 9.79976 376.254 10.3487V69.6625C376.254 70.2114 376.695 70.6564 377.239 70.6564H392.141C410.615 70.6564 422.095 58.9114 422.095 40.0017C422.095 21.092 410.615 9.35474 392.141 9.35474ZM392.141 60.1393H387.336V19.79H392.141C404.134 19.79 411.013 27.1574 411.013 40.0017C411.013 52.7992 404.134 60.1393 392.141 60.1393Z" fill="#EAEEF3"></path>
-  </symbol>
-</svg>
+<a href="#top" class="skip">Skip to content</a>
+
+<!-- fixed atmosphere ------------------------------------------------------- -->
+<div class="atmo" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="v-progress" aria-hidden="true"></div>
 
 <div class="page">
 
-  <!-- Ticker -->
-  <div class="ticker">
-    <div class="ticker__track">
-      <div class="ticker__group" data-ticker-group></div>
-      <div class="ticker__group" data-ticker-group aria-hidden="true"></div>
+  <!-- ticker -------------------------------------------------------------- -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker__track" data-ticker>
+      <div class="ticker__group">
+        <span>NET DELTA — 0.0031</span><span class="dim">·</span>
+        <span>OI HEDGED — $18.4M</span><span class="dim">·</span>
+        <span>BLOCKS VERIFIED — <b data-blocks>41,208,934</b></span><span class="dim">·</span>
+        <span class="mint">TESTNET — LIVE</span><span class="dim">·</span>
+        <span>ETH FUNDING 7D — 11.2% APR</span><span class="dim">·</span>
+        <span>FUNDING TODAY — +$<b data-funding>2,728.72</b></span><span class="dim">·</span>
+      </div>
+      <div class="ticker__group">
+        <span>NET DELTA — 0.0031</span><span class="dim">·</span>
+        <span>OI HEDGED — $18.4M</span><span class="dim">·</span>
+        <span>BLOCKS VERIFIED — <b data-blocks>41,208,934</b></span><span class="dim">·</span>
+        <span class="mint">TESTNET — LIVE</span><span class="dim">·</span>
+        <span>ETH FUNDING 7D — 11.2% APR</span><span class="dim">·</span>
+        <span>FUNDING TODAY — +$<b data-funding>2,728.72</b></span><span class="dim">·</span>
+      </div>
     </div>
   </div>
 
-  <!-- Nav -->
-  <nav class="nav">
-    <div class="nav__inner">
+  <!-- header -------------------------------------------------------------- -->
+  <header class="head">
+    <div class="head__inner">
       <a href="#top" class="brand">
-        <svg class="brand__mark" width="18" height="18" aria-hidden="true"><use href="#i-vessel"></use></svg>
+        <svg class="mark" width="26" height="26" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="14.4" stroke="#F4F1EA" stroke-width="2.6"></circle>
+          <path d="M3 20H37" stroke="#F4F1EA" stroke-width="2.6"></path>
+          <path d="M20 20V34.4" stroke="#FF5B29" stroke-width="2.6"></path>
+        </svg>
         <span class="brand__word">VESSEL</span>
       </a>
-      <div class="nav__links">
-        <a href="#decks" class="nav__link">Product</a>
-        <a href="#how" class="nav__link">How it works</a>
-        <a href="#transparency" class="nav__link">Transparency</a>
-        <a href="https://docs.vessel.wtf" target="_blank" rel="noopener" class="nav__link">Docs</a>
-        <a href="/litepaper" class="nav__link">Litepaper</a>
-      </div>
-      <div class="nav__end">
-        <a href="#waitlist" class="btn btn--primary btn--sm">Board the testnet</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Hero -->
-  <header id="top" class="hero">
-    <canvas class="hero__canvas" data-instrument aria-hidden="true"></canvas>
-    <div class="hero__scrim"></div>
-    <div class="hero__fade"></div>
-    <div class="hero__inner">
-      <div class="hero__content">
-        <div class="hero__eyebrow">
-          <span class="dot"></span>
-          <span data-phase-note>TESTNET — LIVE</span>
-        </div>
-        <h1 class="hero__title">The dollar leverage pays for.</h1>
-        <p class="hero__lede">Vessel runs delta-neutral vaults on Monad — long spot, short the perp on Perpl's fully on-chain order book. Longs pay funding. You earn it. The hedge is public, every block.</p>
-        <div class="hero__actions">
-          <a href="#waitlist" class="btn btn--primary">Board the testnet</a>
-          <a href="/litepaper" class="btn btn--ghost">Read the litepaper</a>
-        </div>
-        <div class="chips">
-          <span class="chip">NO ADMIN MINT</span>
-          <span class="chip">HEDGE VERIFIABLE ON-CHAIN</span>
-          <span class="chip">NON-CUSTODIAL</span>
-        </div>
-      </div>
-    </div>
-    <div class="gauge">
-      <div class="gauge__head">
-        <span class="dot"></span>
-        <span>FUNDING ACCRUED — TODAY</span>
-      </div>
-      <div class="gauge__value" data-funding>+$1,204.5518</div>
-      <div class="gauge__meta"><span data-apr>11.2%</span> APR · 7D · ETH FUNDING ON PERPL</div>
+      <nav class="head__nav" aria-label="Sections">
+        <a href="#decks">Decks</a>
+        <a href="#hedge">The hedge</a>
+        <a href="#how">Engine</a>
+        <a href="#faq">FAQ</a>
+        <a href="/brand-kit">Mark</a>
+      </nav>
+      <a href="#board" class="btn-ghost-mint">
+        <span class="blip" aria-hidden="true"></span>Board the testnet
+      </a>
     </div>
   </header>
 
-  <!-- By the numbers -->
-  <section class="section section--tight stats">
-    <div class="section__inner">
-      <div class="stats__grid">
-        <div class="stat">
-          <span class="stat__value">≈ 0.00</span>
-          <span class="stat__label">NET DELTA</span>
-        </div>
-        <div class="stat">
-          <span class="stat__value stat__value--green" data-apr>11.2%</span>
-          <span class="stat__label">FUNDING APR (7D)</span>
-        </div>
-        <div class="stat">
-          <span class="stat__value stat__value--muted">——</span>
-          <span class="stat__label">% OF PERPL OI</span>
-        </div>
-        <div class="stat">
-          <span class="stat__value" data-block>1,204,551</span>
-          <span class="stat__label">HEDGE UPTIME (BLOCKS)</span>
+  <main>
+
+  <!-- hero ---------------------------------------------------------------- -->
+  <section id="top" class="hero">
+    <div class="hero__grid" aria-hidden="true"></div>
+
+    <div class="hero__copy">
+      <div class="pill"><span class="pill__dot" aria-hidden="true"></span>TESTNET LIVE ON MONAD</div>
+      <h1 class="hero__title">
+        <span>The dollar</span>
+        <span>leverage</span>
+        <span class="orange">pays for.</span>
+      </h1>
+      <p class="hero__lede">
+        Delta-neutral vaults on Monad. Hold spot, short the perp on a fully on-chain order book,
+        collect what longs pay to stay long. The hedge isn't attested — it's
+        <span class="ul">readable, every block</span>.
+      </p>
+      <div class="hero__cta">
+        <a href="#board" class="btn-solid">Board the testnet →</a>
+        <a href="#hedge" class="btn-outline">Watch the hedge</a>
+      </div>
+      <div class="hero__tags">
+        <span>NO ADMIN MINT</span><span class="dim">/</span>
+        <span>NON-CUSTODIAL</span><span class="dim">/</span>
+        <span>ERC-4626</span><span class="dim">/</span>
+        <span>VERIFIABLE ON-CHAIN</span>
+      </div>
+    </div>
+
+    <div class="hero__art">
+      <div class="halo" aria-hidden="true"></div>
+      <div class="orbit" data-orbit aria-hidden="true">
+        <div class="orbit__bob">
+          <div class="orbit__rings" data-rings>
+            <i style="--ry:0deg;   --rc:rgba(107,242,192,.30)"></i>
+            <i style="--ry:20deg;  --rc:rgba(107,242,192,.24)"></i>
+            <i style="--ry:40deg;  --rc:rgba(107,242,192,.20)"></i>
+            <i style="--ry:60deg;  --rc:rgba(155,167,180,.20)"></i>
+            <i style="--ry:80deg;  --rc:rgba(155,167,180,.16)"></i>
+            <i style="--ry:100deg; --rc:rgba(155,167,180,.20)"></i>
+            <i style="--ry:120deg; --rc:rgba(107,242,192,.20)"></i>
+            <i style="--ry:140deg; --rc:rgba(107,242,192,.24)"></i>
+            <i style="--ry:160deg; --rc:rgba(107,242,192,.28)"></i>
+          </div>
+          <div class="orbit__equator">
+            <span class="eq eq--a"></span>
+            <span class="eq eq--b"></span>
+          </div>
+          <span class="orbit__waterline"></span>
+          <span class="orbit__plumb"></span>
+          <span class="orbit__core"></span>
+          <span class="orbit__tag orbit__tag--long">SPOT LONG</span>
+          <span class="orbit__tag orbit__tag--short">PERP SHORT</span>
         </div>
       </div>
-      <p class="stats__note">Built on Monad — 10,000 TPS, 400ms blocks, near-zero gas — because a hedge you can watch has to be cheap to write.</p>
+
+      <div class="readout">
+        <span class="readout__scan" aria-hidden="true"></span>
+        <div>
+          <div class="readout__k">FUNDING TODAY</div>
+          <div class="readout__v readout__v--mint">+$<span data-funding>2,728.72</span></div>
+        </div>
+        <div>
+          <div class="readout__k">NET Δ</div>
+          <div class="readout__v">0.0006</div>
+        </div>
+        <div>
+          <div class="readout__k">BLOCK</div>
+          <div class="readout__v"><span data-blocks>41,208,934</span></div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- The decks -->
-  <section id="decks" class="section">
-    <div class="section__inner">
-      <div class="section__head">
-        <span class="eyebrow">THE DECKS</span>
-        <h2 class="section__title">Pick your deck.</h2>
+  <!-- marquee ------------------------------------------------------------- -->
+  <div class="strip" aria-hidden="true">
+    <div class="strip__track" data-marquee>
+      <div class="strip__group">
+        <span>LONG SPOT</span><span class="orange">✳</span><span>SHORT THE PERP</span><span class="mint">✳</span>
+        <span>COLLECT FUNDING</span><span class="orange">✳</span><span>NET DELTA ≈ 0</span><span class="mint">✳</span>
+        <span>NO CUSTODIAN</span><span class="orange">✳</span><span>NO ADMIN MINT</span><span class="mint">✳</span>
       </div>
+      <div class="strip__group">
+        <span>LONG SPOT</span><span class="orange">✳</span><span>SHORT THE PERP</span><span class="mint">✳</span>
+        <span>COLLECT FUNDING</span><span class="orange">✳</span><span>NET DELTA ≈ 0</span><span class="mint">✳</span>
+        <span>NO CUSTODIAN</span><span class="orange">✳</span><span>NO ADMIN MINT</span><span class="mint">✳</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 01 decks ------------------------------------------------------------ -->
+  <section id="decks" class="sec">
+    <div class="shell">
+      <div class="sec__head v-reveal">
+        <div>
+          <div class="kicker">01 — THE DECKS</div>
+          <h2 class="h2">Pick your deck</h2>
+        </div>
+        <p class="sec__aside">One engine, two seats. Fixed rate above the waterline, levered first-loss below it. Same hedge, opposite appetites.</p>
+      </div>
+
       <div class="decks">
-        <div class="deck deck--hull">
-          <span class="deck__kicker">SENIOR DECK · FIXED RATE</span>
-          <div class="deck__name">HULL</div>
-          <div class="deck__tagline">Fixed. Protected.</div>
-          <p class="deck__body">The senior deck. Your rate is locked to maturity, and losses reach you last. Protection without a premium — cover as capital structure, not as a policy.</p>
-          <a href="https://docs.vessel.wtf/hull" target="_blank" rel="noopener" class="deck__link">docs/hull →</a>
+        <div class="decks__pair">
+          <article class="deck v-reveal v-lift">
+            <div class="deck__meta"><span>SENIOR</span><span class="mint">▲ ABOVE</span></div>
+            <div class="deck__name">Hull</div>
+            <div class="deck__tag orange">FIXED · PROTECTED</div>
+            <p class="deck__body">Rate locked to maturity, losses reach you last. Protection written into the capital structure, not sold as a policy.</p>
+            <div class="deck__stats">
+              <div><div class="deck__num">8.4%</div><div class="deck__lbl">FIXED APR · 90D</div></div>
+              <div><div class="deck__num">LAST</div><div class="deck__lbl">IN LOSS QUEUE</div></div>
+            </div>
+          </article>
+
+          <article class="deck deck--junior v-reveal v-lift">
+            <div class="deck__meta deck__meta--warm"><span>JUNIOR</span><span class="orange">▼ BELOW</span></div>
+            <div class="deck__name">Ballast</div>
+            <div class="deck__tag mint">LEVERED · FIRST-LOSS</div>
+            <p class="deck__body deck__body--warm">Ballast keeps the ship steady. It absorbs negative funding and drawdowns before anyone else — and is paid levered funding for the job.</p>
+            <div class="deck__stats deck__stats--warm">
+              <div><div class="deck__num">14.9%</div><div class="deck__lbl deck__lbl--warm">TRAILING · 30D</div></div>
+              <div><div class="deck__num">FIRST</div><div class="deck__lbl deck__lbl--warm">IN LOSS QUEUE</div></div>
+            </div>
+          </article>
         </div>
-        <div class="deck deck--ballast">
-          <span class="deck__kicker">JUNIOR DECK · FIRST-LOSS</span>
-          <div class="deck__name">BALLAST</div>
-          <div class="deck__tagline">Levered. First-loss.</div>
-          <p class="deck__body">The junior deck. Ballast keeps the ship steady — it absorbs negative funding and drawdowns first, and gets paid levered funding for the job.</p>
-          <a href="https://docs.vessel.wtf/ballast" target="_blank" rel="noopener" class="deck__link">docs/ballast →</a>
-        </div>
+
+        <aside class="stackcard v-reveal">
+          <div class="kicker kicker--tight">CAPITAL STACK · LIVE</div>
+          <div class="stackcard__stage">
+            <div class="stack" data-stack aria-hidden="true">
+              <span class="stack__l stack__l--1"></span>
+              <span class="stack__l stack__l--2"></span>
+              <span class="stack__l stack__l--3"></span>
+              <span class="stack__l stack__l--4"></span>
+            </div>
+          </div>
+          <ul class="legend">
+            <li><span class="sw sw--bone"></span>vUSD SUPPLY</li>
+            <li><span class="sw sw--mint"></span>HULL — FIXED</li>
+            <li><span class="sw sw--orange"></span>BALLAST — FIRST-LOSS</li>
+            <li class="dim"><span class="sw sw--dash"></span>PROTOCOL RESERVE</li>
+          </ul>
+        </aside>
       </div>
-      <div class="vusd">
+
+      <div class="vusd v-reveal">
         <span class="vusd__tag">vUSD</span>
         <span class="vusd__text">The dollar the engine backs. Arrives with mainnet.</span>
+        <span class="vusd__when">Q1 — MAINNET</span>
       </div>
     </div>
   </section>
 
-  <!-- Watch the hedge -->
-  <section id="transparency" class="section">
-    <div class="section__inner">
-      <div class="section__head section__head--wide">
-        <span class="eyebrow">TRANSPARENCY</span>
-        <h2 class="section__title section__title--narrow">Don't trust an attestation. Watch the hedge.</h2>
-        <p class="section__lede">Synthetic dollars usually hedge on centralized venues, behind custodians — you get a PDF and a promise. Vessel's entire short book lives on Perpl, where matching and settlement are fully on-chain. Every position below is real, current, and independently checkable.</p>
+  <!-- 02 hedge ------------------------------------------------------------ -->
+  <section id="hedge" class="sec sec--hedge">
+    <div class="shell">
+      <div class="v-reveal">
+        <div class="kicker">02 — TRANSPARENCY</div>
+        <h2 class="h2 h2--wide">Don't trust an attestation. <span class="mint">Watch the hedge.</span></h2>
+        <p class="sec__lede">Synthetic dollars usually hedge on centralized venues behind custodians — you get a PDF and a promise. Vessel's entire short book lives where matching and settlement are fully on-chain. Every row is real, current, and independently checkable.</p>
       </div>
-      <div class="ledger">
-        <div class="ledger__scroll">
-          <table class="ledger__table">
-            <thead>
-              <tr>
-                <th>MARKET</th>
-                <th>SPOT LEG</th>
-                <th>SHORT ON PERPL</th>
-                <th class="num">NET Δ</th>
-                <th class="num">FUNDING (24H)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="strong">ETH</td>
-                <td>1,182.4 wstETH · KURU</td>
-                <td>−1,183.1 ETH-PERP @ $4,186.20</td>
-                <td class="num muted">+0.0007</td>
-                <td class="num green">+$1,412.88</td>
-              </tr>
-              <tr>
-                <td class="strong">MON</td>
-                <td>412,900 MON · KURU</td>
-                <td>−412,650 MON-PERP @ $2.84</td>
-                <td class="num muted">+0.0006</td>
-                <td class="num green">+$388.51</td>
-              </tr>
-              <tr>
-                <td class="strong">BTC</td>
-                <td>18.62 WBTC · UNISWAP</td>
-                <td>−18.61 BTC-PERP @ $118,240</td>
-                <td class="num amber">−0.0005</td>
-                <td class="num green">+$927.33</td>
-              </tr>
-            </tbody>
-          </table>
+
+      <div class="ledger v-reveal">
+        <div class="ledger__head" role="row">
+          <span>MARKET</span><span>SPOT LEG</span><span>SHORT LEG</span><span>NET Δ</span><span class="right">FUNDING 24H</span>
         </div>
-        <div class="ledger__foot">
-          <span class="dot"></span>
-          <span class="ledger__stamp">LAST VERIFIED BLOCK — <span class="ledger__block" data-block>1,204,551</span></span>
-          <a href="#" class="ledger__verify">Verify on MonadVision →</a>
+        <div class="ledger__row" data-hedge-row>
+          <span>ETH</span><span class="mute">1,182.4 wstETH · KURU</span><span class="mute">−1,183.1 ETH-PERP @ $4,186</span><span class="mute">+0.0007</span><span class="right mint">+$1,412.88</span>
         </div>
+        <div class="ledger__row" data-hedge-row>
+          <span>MON</span><span class="mute">412,900 MON · KURU</span><span class="mute">−412,650 MON-PERP @ $2.84</span><span class="mute">+0.0006</span><span class="right mint">+$388.51</span>
+        </div>
+        <div class="ledger__row ledger__row--last" data-hedge-row>
+          <span>BTC</span><span class="mute">18.62 WBTC · UNISWAP</span><span class="mute">−18.61 BTC-PERP @ $118,240</span><span class="mute">−0.0005</span><span class="right mint">+$927.33</span>
+        </div>
+      </div>
+
+      <div class="ledger__foot">
+        <span>LAST VERIFIED BLOCK — <span data-blocks>41,208,934</span></span>
+        <a href="https://docs.vessel.wtf" target="_blank" rel="noopener" class="verify">VERIFY IN THE EXPLORER →</a>
       </div>
     </div>
   </section>
 
-  <!-- How it works -->
-  <section id="how" class="section">
-    <div class="section__inner">
-      <div class="section__head section__head--lg">
-        <span class="eyebrow">HOW IT WORKS</span>
-        <h2 class="section__title">Three moves. One engine.</h2>
-      </div>
-      <div class="steps">
-        <div class="step">
-          <span class="step__num">01</span>
-          <div class="step__title">Deposit USDC</div>
-          <p class="step__body">Pick a deck — Hull for a fixed rate, Ballast for levered funding. Deposits mint ERC-4626 vault shares.</p>
-        </div>
-        <div class="step">
-          <span class="step__num">02</span>
-          <div class="step__title">The engine opens the pair</div>
-          <p class="step__body">Long spot via Kuru or Uniswap; an equal short on Perpl's fully on-chain order book. Net delta ≈ 0.</p>
-        </div>
-        <div class="step">
-          <span class="step__num">03</span>
-          <div class="step__title">Funding streams to your deck</div>
-          <p class="step__body">Longs pay funding to shorts. Hull takes its fixed rate first; Ballast takes the levered remainder.</p>
-        </div>
-      </div>
-      <div class="waterfall">
-        <div class="waterfall__col">
-          <span class="waterfall__label">WHEN FUNDING FLOWS</span>
-          <div class="node node--green">FUNDING EARNED</div>
-          <div class="arrow">↓</div>
-          <div class="node node--slate-strong">HULL — FIXED RATE, PAID FIRST</div>
-          <div class="arrow arrow--labeled"><span>↓</span><span class="arrow__tag">REMAINDER</span></div>
-          <div class="node node--amber">BALLAST — LEVERED UPSIDE</div>
-        </div>
-        <div class="waterfall__col">
-          <span class="waterfall__label">WHEN LOSSES HIT</span>
-          <div class="node node--amber">DRAWDOWN / NEGATIVE FUNDING</div>
-          <div class="arrow">↓</div>
-          <div class="node node--amber">BALLAST ABSORBS FIRST</div>
-          <div class="arrow">↓</div>
-          <div class="node node--slate">PROTOCOL RESERVE</div>
-          <div class="arrow">↓</div>
-          <div class="node node--slate-strong">HULL — LAST IN LINE</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Why this exists -->
-  <section id="why" class="section">
-    <div class="section__inner">
-      <div class="why">
-        <span class="eyebrow">WHY VESSEL EXISTS</span>
-        <p class="why__body">Every synthetic dollar asks for trust in the same three places: an admin key that can mint unbacked supply, collateral you can't independently price, and a hedge book parked at a custodian you will never see inside.</p>
-        <p class="why__body">When those fail, they fail silently. You learn about the hole from a blog post, weeks after withdrawals froze. An attestation is a photograph of a balance sheet, taken by the people who own it.</p>
-        <p class="why__body">Vessel's answer is architectural, not procedural. There is no privileged mint. Collateral lives on-chain. And the entire short book sits on Perpl's public order book, where anyone can re-derive the hedge, block by block.</p>
-      </div>
-      <div class="pull">
-        <p class="pull__quote">"If you can't verify the hedge, you don't own the yield."</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Ecosystem -->
+  <!-- ecosystem ----------------------------------------------------------- -->
   <section class="eco">
-    <div class="eco__inner">
-      <div class="eco__grid">
-        <div class="eco__cell">
-          <span class="eco__label">BUILT ON</span>
-          <svg class="logo logo--monad" viewBox="0 0 423 80" role="img" aria-label="Monad"><use href="#i-monad"></use></svg>
+    <div class="shell eco__grid">
+      <div class="v-reveal">
+        <div class="eco__k">BUILT ON</div>
+        <img src="/assets/logo-monad.png" alt="Monad" class="eco__logo eco__logo--26" width="238" height="26">
+      </div>
+      <div class="v-reveal">
+        <div class="eco__k">HEDGED ON</div>
+        <img src="/assets/logo-perpl.png" alt="Perpl" class="eco__logo eco__logo--26" width="152" height="26">
+      </div>
+      <div class="v-reveal">
+        <div class="eco__k">SPOT VIA</div>
+        <div class="eco__pair">
+          <img src="/assets/logo-kuru.png" alt="Kuru" class="eco__logo eco__logo--24" width="173" height="24">
+          <span class="eco__rule" aria-hidden="true"></span>
+          <img src="/assets/logo-uniswap.png" alt="Uniswap" class="eco__logo eco__logo--24" width="179" height="24">
         </div>
-        <div class="eco__cell">
-          <span class="eco__label">HEDGED ON</span>
-          <img src="/assets/perpl-black.png" alt="Perpl" class="logo logo--perpl">
-        </div>
-        <div class="eco__cell">
-          <span class="eco__label">SPOT VIA</span>
-          <div class="eco__logos">
-            <img src="/assets/kuru-white-trim.png" alt="Kuru" class="logo logo--kuru">
-            <span class="eco__rule"></span>
-            <img src="/assets/uniswap-white.svg" alt="Uniswap" class="logo logo--uniswap">
+      </div>
+      <div class="v-reveal">
+        <div class="eco__k">YIELD-ASSET READY</div>
+        <img src="/assets/logo-pendle.png" alt="Pendle" class="eco__logo eco__logo--22" width="196" height="22">
+      </div>
+      <p class="eco__note">FACTUAL DESCRIPTORS OF WHERE THE ENGINE EXECUTES — NOT ENDORSEMENTS. PENDLE COMPATIBILITY DESCRIBES THE ASSET, NOT A LIVE POOL.</p>
+    </div>
+  </section>
+
+  <!-- 03 engine ----------------------------------------------------------- -->
+  <section id="how" class="sec">
+    <div class="shell">
+      <div class="v-reveal">
+        <div class="kicker">03 — THE ENGINE</div>
+        <h2 class="h2 h2--gap">Three moves</h2>
+      </div>
+
+      <div class="steps">
+        <article class="step v-reveal v-lift">
+          <div class="step__n">01</div>
+          <h3 class="step__h">Deposit USDC</h3>
+          <p class="step__p">Pick a deck — Hull for a fixed rate, Ballast for levered funding. Deposits mint ERC-4626 shares in your own wallet.</p>
+        </article>
+        <article class="step v-reveal v-lift">
+          <div class="step__n">02</div>
+          <h3 class="step__h">The engine opens the pair</h3>
+          <p class="step__p">Long spot via Kuru or Uniswap; an equal short on a fully on-chain order book. Net delta held at ≈ 0, rehedged continuously.</p>
+        </article>
+        <article class="step v-reveal v-lift">
+          <div class="step__n">03</div>
+          <h3 class="step__h">Funding streams to your deck</h3>
+          <p class="step__p">Longs pay funding to shorts. Hull takes its fixed rate first; Ballast takes the levered remainder.</p>
+        </article>
+      </div>
+
+      <div class="flows">
+        <div class="flow flow--up v-reveal">
+          <div class="flow__k mint">WHEN FUNDING FLOWS ↑</div>
+          <div class="flow__list">
+            <div class="node">FUNDING EARNED</div>
+            <div class="arrow mint">↓</div>
+            <div class="node node--mint">HULL — FIXED RATE, PAID FIRST</div>
+            <div class="arrow arrow--sm mint">↓ REMAINDER</div>
+            <div class="node node--orange-line">BALLAST — LEVERED UPSIDE</div>
           </div>
         </div>
-        <div class="eco__cell">
-          <span class="eco__label">YIELD-ASSET READY</span>
-          <img src="/assets/pendle.svg" alt="Pendle" class="logo logo--pendle">
+        <div class="flow flow--down v-reveal">
+          <div class="flow__k orange">WHEN LOSSES HIT ↓</div>
+          <div class="flow__list">
+            <div class="node">DRAWDOWN / NEGATIVE FUNDING</div>
+            <div class="arrow orange">↓</div>
+            <div class="node node--orange">BALLAST ABSORBS FIRST</div>
+            <div class="arrow orange">↓</div>
+            <div class="node node--dash">PROTOCOL RESERVE</div>
+            <div class="arrow orange">↓</div>
+            <div class="node node--mint-line">HULL — LAST IN LINE</div>
+          </div>
         </div>
       </div>
-      <div class="eco__note">Factual descriptors of where the engine executes — not endorsements. Pendle compatibility describes the asset, not a live pool.</div>
     </div>
   </section>
 
-  <!-- FAQ -->
-  <section id="faq" class="section faq">
-    <div class="faq__inner">
-      <div class="section__head">
-        <span class="eyebrow">FAQ</span>
-        <h2 class="section__title">Honest answers.</h2>
+  <!-- 04 thesis ----------------------------------------------------------- -->
+  <section class="sec sec--thesis">
+    <div class="shell thesis">
+      <div class="v-reveal">
+        <div class="kicker">04 — WHY VESSEL EXISTS</div>
+        <blockquote class="thesis__quote">“If you can't verify the hedge, you don't own the yield.”</blockquote>
+        <div class="thesis__attr">— THE VESSEL THESIS</div>
       </div>
-      <div class="faq__list" data-faq></div>
+      <div class="thesis__body v-reveal">
+        <p>Every synthetic dollar asks for trust in the same three places: an admin key that can mint unbacked supply, collateral you can't independently price, and a hedge book parked at a custodian you will never see inside.</p>
+        <p>When those fail, they fail silently. You learn about the hole from a blog post, weeks after withdrawals froze. An attestation is a photograph of a balance sheet, taken by the people who own it.</p>
+        <p class="bright">Vessel's answer is architectural, not procedural. No privileged mint. Collateral on-chain. The entire short book on a public order book, where anyone can re-derive the hedge, block by block.</p>
+      </div>
     </div>
   </section>
 
-  <!-- Waitlist -->
-  <section id="waitlist" class="section waitlist">
-    <div class="waitlist__inner">
-      <h2 class="waitlist__title">Board early.</h2>
-      <form class="waitlist__form" data-waitlist novalidate>
-        <input type="email" required placeholder="you@harbor.xyz" aria-label="Email address" class="waitlist__input" data-waitlist-email>
-        <!-- Honeypot: never shown, never focusable, never announced. A bot that
-             fills it gets a 204 from the API and nothing is stored. -->
-        <div class="hp" aria-hidden="true">
-          <label for="website">Website</label>
-          <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" data-waitlist-hp>
+  <!-- 05 faq -------------------------------------------------------------- -->
+  <section id="faq" class="sec">
+    <div class="shell faq">
+      <div class="v-reveal">
+        <div class="kicker">05 — FAQ</div>
+        <h2 class="h2 h2--sm">Honest answers</h2>
+      </div>
+      <div class="faq__list v-reveal">
+        <details>
+          <summary><span>What happens when funding goes negative?</span><span class="faq__sign" aria-hidden="true">+</span></summary>
+          <p>Ballast eats it first, by design — that is what its levered upside pays for. If negative funding exhausts Ballast, the protocol reserve absorbs the next tranche. Hull is last in line and keeps its fixed rate until those layers are gone.</p>
+        </details>
+        <details>
+          <summary><span>Can Vessel mint vUSD out of thin air?</span><span class="faq__sign" aria-hidden="true">+</span></summary>
+          <p>No. There is no privileged mint function and no admin key that can expand supply. Every unit is minted against collateral that is already on-chain and already hedged.</p>
+        </details>
+        <details>
+          <summary><span>How do I check the hedge myself?</span><span class="faq__sign" aria-hidden="true">+</span></summary>
+          <p>Read Vessel's vault addresses in the explorer, then read the matching short positions on the perp order book. Both legs are public state — you can re-derive net delta yourself at any block height, without asking us for anything.</p>
+        </details>
+        <details>
+          <summary><span>What are the real risks?</span><span class="faq__sign" aria-hidden="true">+</span></summary>
+          <p>Sustained negative funding, perp-venue liquidity and liquidation risk, spot-perp basis dislocation, oracle failure, and smart-contract risk. Vessel removes custodial and mint-authority risk; it does not remove market risk. The <a href="/litepaper">litepaper</a> states each one plainly.</p>
+        </details>
+        <details>
+          <summary><span>Why Monad?</span><span class="faq__sign" aria-hidden="true">+</span></summary>
+          <p>Because continuous, verifiable rehedging is only economic where blocks are fast and gas is near-zero. 400ms blocks let the engine hold delta tight and write every adjustment to public state instead of batching it out of sight.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 mark ------------------------------------------------------------- -->
+  <section id="brand" class="sec sec--brand">
+    <div class="shell">
+      <div class="kicker v-reveal">06 — THE MARK</div>
+      <div class="markgrid">
+        <div class="v-reveal">
+          <h2 class="h2 h2--sm">A waterline and a plumb</h2>
+          <p class="mark__p">The circle is the vessel. The horizontal rule is the waterline — the line between Hull above and Ballast below. The plumb dropping from centre is the hedge: the leg that holds the whole thing upright.</p>
+          <p class="mark__p">Three strokes, one weight, no gradient. It reads at 16px in a wallet list and at 16 feet on a conference banner.</p>
+          <div class="swatches">
+            <span class="chip">VOID #05070A</span>
+            <span class="chip">BONE #F4F1EA</span>
+            <span class="chip chip--orange">SIGNAL #FF5B29</span>
+            <span class="chip chip--mint">DELTA #6BF2C0</span>
+          </div>
+          <a href="/brand-kit" class="btn-outline btn-outline--sm">Open the brand kit →</a>
         </div>
-        <button type="submit" class="btn btn--primary" data-waitlist-submit>Get testnet access</button>
-      </form>
-      <div class="waitlist__success" data-waitlist-success hidden role="status"></div>
-      <p class="waitlist__error" data-waitlist-error hidden role="alert"></p>
-      <p class="waitlist__count" data-waitlist-count hidden></p>
+
+        <div class="markcells v-reveal">
+          <div class="cell cell--void">
+            <svg width="118" height="118" viewBox="0 0 40 40" fill="none" role="img" aria-label="Vessel mark on void">
+              <circle cx="20" cy="20" r="14.4" stroke="#F4F1EA" stroke-width="2.2"></circle>
+              <path d="M3 20H37" stroke="#F4F1EA" stroke-width="2.2"></path>
+              <path d="M20 20V34.4" stroke="#FF5B29" stroke-width="2.2"></path>
+            </svg>
+          </div>
+          <div class="cell cell--bone">
+            <svg width="118" height="118" viewBox="0 0 40 40" fill="none" role="img" aria-label="Vessel mark on bone">
+              <circle cx="20" cy="20" r="14.4" stroke="#05070A" stroke-width="2.2"></circle>
+              <path d="M3 20H37" stroke="#05070A" stroke-width="2.2"></path>
+              <path d="M20 20V34.4" stroke="#FF5B29" stroke-width="2.2"></path>
+            </svg>
+          </div>
+          <div class="cell cell--orange">
+            <svg width="118" height="118" viewBox="0 0 40 40" fill="none" role="img" aria-label="Vessel mark on signal">
+              <circle cx="20" cy="20" r="14.4" stroke="#05070A" stroke-width="2.2"></circle>
+              <path d="M3 20H37" stroke="#05070A" stroke-width="2.2"></path>
+              <path d="M20 20V34.4" stroke="#F4F1EA" stroke-width="2.2"></path>
+            </svg>
+          </div>
+          <div class="cell cell--void cell--sizes">
+            <svg width="34" height="34" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="14.4" stroke="#F4F1EA" stroke-width="2.8"></circle>
+              <path d="M3 20H37" stroke="#F4F1EA" stroke-width="2.8"></path>
+              <path d="M20 20V34.4" stroke="#FF5B29" stroke-width="2.8"></path>
+            </svg>
+            <svg width="18" height="18" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="14.4" stroke="#F4F1EA" stroke-width="3.4"></circle>
+              <path d="M3 20H37" stroke="#F4F1EA" stroke-width="3.4"></path>
+              <path d="M20 20V34.4" stroke="#FF5B29" stroke-width="3.4"></path>
+            </svg>
+            <span class="cell__lbl">34PX / 18PX</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer__inner">
-      <div class="footer__top">
-        <div class="footer__brand">
-          <a href="#top" class="brand">
-            <svg class="brand__mark" width="17" height="17" aria-hidden="true"><use href="#i-vessel"></use></svg>
+  <!-- board --------------------------------------------------------------- -->
+  <section id="board" class="sec sec--board">
+    <div class="board__halo" aria-hidden="true"></div>
+    <div class="shell board">
+      <div class="v-reveal">
+        <h2 class="board__h">Board early</h2>
+        <p class="board__p">Testnet access goes out in waves. Leave an email and we'll send keys, the litepaper, and the hedge dashboard.</p>
+        <p class="board__count" data-waitlist-count hidden></p>
+      </div>
+
+      <div class="v-reveal">
+        <form class="board__form" data-waitlist novalidate>
+          <label class="sr-only" for="handle">Website or X handle (optional)</label>
+          <input type="text" id="handle" name="handle" class="field" placeholder="Website or X handle"
+                 autocomplete="url" maxlength="120" data-waitlist-handle>
+
+          <label class="sr-only" for="email">Email address</label>
+          <input type="email" id="email" name="email" class="field" placeholder="you@domain.com"
+                 required autocomplete="email" maxlength="254" data-waitlist-email>
+
+          <!-- Honeypot. Never shown, never focusable, never announced. A bot that
+               fills it gets a 204 from the API and nothing is stored. Note this is
+               a DIFFERENT field from the visible "handle" above. -->
+          <div class="hp" aria-hidden="true">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" data-waitlist-hp>
+          </div>
+
+          <button type="submit" class="btn-mint" data-waitlist-submit>Request access →</button>
+        </form>
+        <p class="board__ok" data-waitlist-success hidden role="status"></p>
+        <p class="board__err" data-waitlist-error hidden role="alert"></p>
+        <p class="board__fine">TESTNET ONLY · NO REAL FUNDS · NOT FINANCIAL ADVICE</p>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <!-- footer -------------------------------------------------------------- -->
+  <footer class="foot">
+    <div class="shell">
+      <div class="foot__grid">
+        <div>
+          <div class="foot__brand">
+            <svg width="24" height="24" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="14.4" stroke="#F4F1EA" stroke-width="2.6"></circle>
+              <path d="M3 20H37" stroke="#F4F1EA" stroke-width="2.6"></path>
+              <path d="M20 20V34.4" stroke="#FF5B29" stroke-width="2.6"></path>
+            </svg>
             <span class="brand__word brand__word--sm">VESSEL</span>
+          </div>
+          <p class="foot__tag">The dollar leverage pays for. Delta-neutral, verifiable every block.</p>
+          <div class="eco__k">BUILT ON</div>
+          <a href="https://monad.xyz" target="_blank" rel="noopener" aria-label="Monad">
+            <img src="/assets/logo-monad.png" alt="" class="eco__logo eco__logo--26" width="238" height="26">
           </a>
-          <p class="footer__tag">The dollar leverage pays for. Delta-neutral, verifiable every block.</p>
-          <div class="footer__builton">
-            <span class="footer__colhead">BUILT ON</span>
-            <a href="https://monad.xyz" target="_blank" rel="noopener" aria-label="Monad" class="footer__monad">
-              <svg class="logo logo--monad-sm" viewBox="0 0 423 80" aria-hidden="true"><use href="#i-monad"></use></svg>
-            </a>
+        </div>
+        <div>
+          <div class="eco__k foot__k">PRODUCT</div>
+          <div class="foot__links">
+            <a href="#decks">The decks</a>
+            <a href="#how">How it works</a>
+            <a href="#hedge">Transparency</a>
+            <a href="#faq">FAQ</a>
           </div>
         </div>
-        <div class="footer__cols">
-          <div class="footer__col">
-            <span class="footer__colhead">PRODUCT</span>
-            <a href="#decks" class="footer__link">The decks</a>
-            <a href="#how" class="footer__link">How it works</a>
-            <a href="#transparency" class="footer__link">Transparency</a>
-            <a href="#faq" class="footer__link">FAQ</a>
+        <div>
+          <div class="eco__k foot__k">RESOURCES</div>
+          <div class="foot__links">
+            <a href="https://docs.vessel.wtf" target="_blank" rel="noopener">Docs</a>
+            <a href="/litepaper">Litepaper</a>
+            <a href="#board">Testnet access</a>
+            <a href="/brand-kit">Brand kit</a>
           </div>
-          <div class="footer__col">
-            <span class="footer__colhead">RESOURCES</span>
-            <a href="https://docs.vessel.wtf" target="_blank" rel="noopener" class="footer__link">Docs</a>
-            <a href="/litepaper" class="footer__link">Litepaper</a>
-            <a href="#waitlist" class="footer__link">Testnet access</a>
-            <a href="/brand-kit" class="footer__link">Brand kit</a>
-          </div>
-          <div class="footer__col">
-            <span class="footer__colhead">CONNECT</span>
-            <a href="https://github.com/Lemma-Development-Labs/vessel" target="_blank" rel="noopener" class="footer__link">GitHub</a>
-            <a href="https://x.com/vessel_hq" target="_blank" rel="noopener" class="footer__link">X</a>
-            <a href="https://t.me/+Akd24ACXWl5lY2E1" target="_blank" rel="noopener" class="footer__link">Telegram</a>
+        </div>
+        <div>
+          <div class="eco__k foot__k">CONNECT</div>
+          <div class="foot__links">
+            <a href="https://github.com/Lemma-Development-Labs/vessel" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://x.com/vessel_hq" target="_blank" rel="noopener">X</a>
+            <a href="https://t.me/+Akd24ACXWl5lY2E1" target="_blank" rel="noopener">Telegram</a>
           </div>
         </div>
       </div>
-      <div class="footer__bottom">
-        <span class="footer__legal">Vessel is experimental software in testnet. Nothing on this page is an offer, solicitation, or financial advice.</span>
-        <span class="footer__copy">© 2026 VESSEL · VESSEL.WTF</span>
+      <div class="foot__bottom">
+        <span>Vessel is experimental software in testnet. Nothing on this page is an offer, solicitation, or financial advice.</span>
+        <span class="foot__copy">© 2026 VESSEL · VESSEL.WTF</span>
       </div>
     </div>
-    <div class="footer__markwrap" aria-hidden="true">
-      <canvas class="footer__mark" data-mark></canvas>
+    <div class="foot__dots" aria-hidden="true">
+      <canvas data-dots></canvas>
     </div>
   </footer>
 
 </div>
 
-<script src="/config.js?v=2"></script>
-<script src="/main.js?v=2"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"
+        integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt"
+        crossorigin="anonymous" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"
+        integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d"
+        crossorigin="anonymous" defer></script>
+<script src="/config.js?v=3" defer></script>
+<script src="/v2.js?v=3" defer></script>
 </body>
 </html>

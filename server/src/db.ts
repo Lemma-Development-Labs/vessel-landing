@@ -32,6 +32,9 @@ export async function initSchema(): Promise<void> {
       ip_hash text
     );
   `);
+  // Added after launch: the v2 landing collects an optional handle. Additive
+  // and idempotent, so existing rows and older deploys are unaffected.
+  await pool.query(`ALTER TABLE crew ADD COLUMN IF NOT EXISTS handle text;`);
 }
 
 export async function dbHealthy(): Promise<boolean> {
@@ -70,13 +73,14 @@ export async function addToWaitlist(
   email: string,
   source: string,
   ipHash: string | null,
+  handle: string | null = null,
 ): Promise<SignupResult> {
   const inserted = await pool.query<{ id: string }>(
-    `INSERT INTO crew (email, source, ip_hash)
-     VALUES ($1, $2, $3)
+    `INSERT INTO crew (email, source, ip_hash, handle)
+     VALUES ($1, $2, $3, $4)
      ON CONFLICT (email) DO NOTHING
      RETURNING id`,
-    [email, source, ipHash],
+    [email, source, ipHash, handle],
   );
 
   const newRow = inserted.rows[0];
@@ -103,11 +107,12 @@ export async function countCrew(): Promise<number> {
 export interface CrewRow {
   email: string;
   created_at: string;
+  handle: string | null;
 }
 
 export async function listCrew(limit = 2000): Promise<CrewRow[]> {
   const { rows } = await pool.query<CrewRow>(
-    `SELECT email, created_at
+    `SELECT email, created_at, handle
        FROM crew
       ORDER BY id DESC
       LIMIT $1`,
