@@ -7,33 +7,37 @@
 (function () {
   "use strict";
 
-  var MARK = function (c, l) {
-    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">\n' +
-      '  <circle cx="16" cy="16" r="12" stroke="' + c + '" stroke-width="2.5"/>\n' +
-      '  <line x1="6" y1="16" x2="26" y2="16" stroke="' + l + '" stroke-width="2.5"/>\n' +
-      '</svg>';
-  };
-
+  // Payloads are byte-identical to the files in /brand.
   var SOURCES = {
-    mark: MARK("#8FA6BC", "#EAEEF3"),
+    mark:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" fill="none">\n' +
+      '  <circle cx="20" cy="20" r="14.4" stroke="#F4F1EA" stroke-width="2.6"/>\n' +
+      '  <path d="M3 20H37" stroke="#F4F1EA" stroke-width="2.6"/>\n' +
+      '  <path d="M20 20V34.4" stroke="#FF5B29" stroke-width="2.6"/>\n' +
+      '</svg>\n',
 
-    word: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 124 24" width="124" height="24">\n' +
-      '  <text x="0" y="19" font-family="Bricolage Grotesque, sans-serif" font-weight="700" font-size="24" letter-spacing="5.28" fill="#EAEEF3">VESSEL</text>\n' +
-      '</svg>',
+    word:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 20" width="150" height="20">\n' +
+      '  <text x="0" y="15" font-family="IBM Plex Mono, monospace" font-weight="600" font-size="15" letter-spacing="3.9" fill="#F4F1EA">VESSEL</text>\n' +
+      '</svg>\n',
 
-    lockH: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 188 32" width="188" height="32" fill="none">\n' +
-      '  <circle cx="16" cy="16" r="12" stroke="#8FA6BC" stroke-width="2.5"/>\n' +
-      '  <line x1="6" y1="16" x2="26" y2="16" stroke="#EAEEF3" stroke-width="2.5"/>\n' +
-      '  <text x="50" y="25" font-family="Bricolage Grotesque, sans-serif" font-weight="700" font-size="26.5" letter-spacing="5.83" fill="#EAEEF3">VESSEL</text>\n' +
-      '</svg>',
+    lockH:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212 40" width="212" height="40" fill="none">\n' +
+      '  <circle cx="20" cy="20" r="14.4" stroke="#F4F1EA" stroke-width="2.6"/>\n' +
+      '  <path d="M3 20H37" stroke="#F4F1EA" stroke-width="2.6"/>\n' +
+      '  <path d="M20 20V34.4" stroke="#FF5B29" stroke-width="2.6"/>\n' +
+      '  <text x="55" y="26" font-family="IBM Plex Mono, monospace" font-weight="600" font-size="16" letter-spacing="4.16" fill="#F4F1EA">VESSEL</text>\n' +
+      '</svg>\n',
 
-    lockV: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 138 78" width="138" height="78" fill="none">\n' +
-      '  <g transform="translate(53 0)">\n' +
-      '    <circle cx="16" cy="16" r="12" stroke="#8FA6BC" stroke-width="2.5"/>\n' +
-      '    <line x1="6" y1="16" x2="26" y2="16" stroke="#EAEEF3" stroke-width="2.5"/>\n' +
+    lockV:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 78" width="150" height="78" fill="none">\n' +
+      '  <g transform="translate(55 0)">\n' +
+      '    <circle cx="20" cy="20" r="14.4" stroke="#F4F1EA" stroke-width="2.6"/>\n' +
+      '    <path d="M3 20H37" stroke="#F4F1EA" stroke-width="2.6"/>\n' +
+      '    <path d="M20 20V34.4" stroke="#FF5B29" stroke-width="2.6"/>\n' +
       '  </g>\n' +
-      '  <text x="66" y="70" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="700" font-size="26.5" letter-spacing="5.83" fill="#EAEEF3">VESSEL</text>\n' +
-      '</svg>'
+      '  <text x="75" y="70" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-weight="600" font-size="16" letter-spacing="4.16" fill="#F4F1EA">VESSEL</text>\n' +
+      '</svg>\n'
   };
 
   var LABEL = "COPY SVG";
